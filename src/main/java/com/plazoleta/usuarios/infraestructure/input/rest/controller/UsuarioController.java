@@ -1,9 +1,13 @@
 package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
+import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
+import com.plazoleta.usuarios.infraestructure.input.rest.dto.UsuarioResponseDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
+import com.plazoleta.usuarios.infraestructure.input.rest.mapper.UsuarioResponseMapper;
 import com.plazoleta.usuarios.application.handler.CrearPropietarioHandler;
+import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,6 +16,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +34,26 @@ public class UsuarioController {
 
     private final CrearPropietarioHandler handler;
     private final CrearPropietarioRestMapper restMapper;
+    private final UsuarioServicePort usuarioServicePort;
+    private final UsuarioResponseMapper responseMapper;
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Obtener usuario por ID",
+            description = "Obtiene la información de un usuario mediante su identificador único"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<UsuarioResponseDto> obtenerUsuarioPorId(@PathVariable Integer id) {
+        Usuario usuario = usuarioServicePort.obtenerUsuarioPorId(id);
+        if (usuario == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(responseMapper.toResponse(usuario));
+    }
 
     @PostMapping("/propietario")
     @Operation(
