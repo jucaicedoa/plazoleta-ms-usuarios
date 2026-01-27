@@ -1,6 +1,5 @@
 package com.plazoleta.usuarios.domain.usecase;
 
-import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
@@ -12,17 +11,18 @@ import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
 import java.time.LocalDate;
 import java.time.Period;
 
-public class CrearPropietarioUseCase implements UsuarioServicePort {
+public class CrearPropietarioUseCase {
 
     private final UsuarioPersistencePort persistencePort;
     private final PasswordEncoderPort passwordEncoderPort;
 
-    public CrearPropietarioUseCase( UsuarioPersistencePort persistencePort, PasswordEncoderPort passwordEncoderPort) {
+    public CrearPropietarioUseCase(
+            UsuarioPersistencePort persistencePort,
+            PasswordEncoderPort passwordEncoderPort) {
         this.persistencePort = persistencePort;
         this.passwordEncoderPort = passwordEncoderPort;
     }
 
-    @Override
     public void crearPropietario(DatosCreacionUsuario datos) {
 
         validar(datos);
