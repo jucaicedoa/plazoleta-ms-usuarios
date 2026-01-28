@@ -135,6 +135,46 @@ class UsuarioJpaAdapterTest {
         assertEquals(roleEntity, usuarioEntity.getRole());
     }
 
+    @Test
+    void deberiaObtenerUsuarioPorIdCuandoExiste() {
+        // Arrange
+        Integer id = 1;
+        UsuarioEntity usuarioEntity = new UsuarioEntity();
+        usuarioEntity.setId(1);
+        usuarioEntity.setNombre("Juan");
+        usuarioEntity.setApellido("Pérez");
+        usuarioEntity.setCorreo("juan@example.com");
+        
+        Usuario usuario = crearUsuario();
+        
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioEntity));
+        when(mapper.toDomain(usuarioEntity)).thenReturn(usuario);
+
+        // Act
+        Usuario resultado = adapter.obtenerUsuarioPorId(id);
+
+        // Assert
+        assertNotNull(resultado);
+        verify(usuarioRepository, times(1)).findById(1L);
+        verify(mapper, times(1)).toDomain(usuarioEntity);
+    }
+
+    @Test
+    void deberiaRetornarNullCuandoUsuarioNoExiste() {
+        // Arrange
+        Integer id = 999;
+        
+        when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // Act
+        Usuario resultado = adapter.obtenerUsuarioPorId(id);
+
+        // Assert
+        assertEquals(null, resultado);
+        verify(usuarioRepository, times(1)).findById(999L);
+        verify(mapper, never()).toDomain(any());
+    }
+
     // Métodos auxiliares
     private Usuario crearUsuario() {
         Usuario usuario = new Usuario();

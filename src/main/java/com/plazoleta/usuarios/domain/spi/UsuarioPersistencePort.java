@@ -5,5 +5,5 @@ public interface UsuarioPersistencePort {
 
     Usuario guardarUsuario(Usuario usuario);
     boolean existeCorreo(String correo);
-
+    Usuario obtenerUsuarioPorId(Integer id);
 }

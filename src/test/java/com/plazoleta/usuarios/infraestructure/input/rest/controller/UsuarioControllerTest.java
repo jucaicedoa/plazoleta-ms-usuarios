@@ -4,12 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.handler.CrearPropietarioHandler;
+import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
+import com.plazoleta.usuarios.domain.model.Rol;
+import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.infraestructure.exceptionhandler.GlobalExceptionHandler;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
+import com.plazoleta.usuarios.infraestructure.input.rest.dto.UsuarioResponseDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
+import com.plazoleta.usuarios.infraestructure.input.rest.mapper.UsuarioResponseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -41,6 +47,12 @@ class UsuarioControllerTest {
 
     @Mock
     private CrearPropietarioRestMapper restMapper;
+
+    @Mock
+    private UsuarioServicePort usuarioServicePort;
+
+    @Mock
+    private UsuarioResponseMapper responseMapper;
 
     @InjectMocks
     private UsuarioController controller;
@@ -273,7 +285,76 @@ class UsuarioControllerTest {
         verify(handler, never()).crearPropietario(any());
     }
 
-    // Metodo auxiliar
+    @Test
+    void deberiaObtenerUsuarioPorIdYRetornar200() throws Exception {
+        // Arrange
+        Integer id = 1;
+        Usuario usuario = crearUsuario();
+        UsuarioResponseDto responseDto = crearUsuarioResponseDto();
+
+        when(usuarioServicePort.obtenerUsuarioPorId(id)).thenReturn(usuario);
+        when(responseMapper.toResponse(usuario)).thenReturn(responseDto);
+
+        // Act & Assert
+        mockMvc.perform(get("/usuarios/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(responseDto.getId()))
+                .andExpect(jsonPath("$.nombre").value(responseDto.getNombre()))
+                .andExpect(jsonPath("$.apellido").value(responseDto.getApellido()))
+                .andExpect(jsonPath("$.documento").value(responseDto.getDocumento()))
+                .andExpect(jsonPath("$.celular").value(responseDto.getCelular()))
+                .andExpect(jsonPath("$.correo").value(responseDto.getCorreo()))
+                .andExpect(jsonPath("$.rol").value(responseDto.getRol()));
+
+        verify(usuarioServicePort, times(1)).obtenerUsuarioPorId(id);
+        verify(responseMapper, times(1)).toResponse(usuario);
+    }
+
+    @Test
+    void deberiaRetornar404CuandoUsuarioNoExiste() throws Exception {
+        // Arrange
+        Integer id = 999;
+
+        when(usuarioServicePort.obtenerUsuarioPorId(id)).thenReturn(null);
+
+        // Act & Assert
+        mockMvc.perform(get("/usuarios/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify(usuarioServicePort, times(1)).obtenerUsuarioPorId(id);
+        verify(responseMapper, never()).toResponse(any());
+    }
+
+    // Metodos auxiliares
+    private Usuario crearUsuario() {
+        Usuario usuario = new Usuario();
+        usuario.setId(1);
+        usuario.setNombre("Juan");
+        usuario.setApellido("Pérez");
+        usuario.setDocumento("12345678");
+        usuario.setCelular("+573001234567");
+        usuario.setFechaNacimiento(LocalDate.now().minusYears(25));
+        usuario.setCorreo("juan@example.com");
+        usuario.setClave("passwordEncriptada");
+        usuario.setRol(new Rol(2, "PROPIETARIO"));
+        return usuario;
+    }
+
+    private UsuarioResponseDto crearUsuarioResponseDto() {
+        return UsuarioResponseDto.builder()
+                .id(1)
+                .nombre("Juan")
+                .apellido("Pérez")
+                .documento("12345678")
+                .celular("+573001234567")
+                .fechaNacimiento(LocalDate.now().minusYears(25))
+                .correo("juan@example.com")
+                .rol("PROPIETARIO")
+                .build();
+    }
+
     private CrearPropietarioRequestDto crearRequestDtoValido() {
         CrearPropietarioRequestDto dto = new CrearPropietarioRequestDto();
         dto.setNombre("Juan");
