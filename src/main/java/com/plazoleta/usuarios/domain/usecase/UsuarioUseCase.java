@@ -38,10 +38,29 @@ public class UsuarioUseCase implements UsuarioServicePort {
                 .correo(datos.getCorreo())
                 .clave(claveEncriptada)
                 .build();
-        // Crear usuario con validación de mayor de edad
-        Rol rolPropietario = new Rol(2, "PROPIETARIO");
+
+        Rol rolPropietario = new Rol(null, "PROPIETARIO");
         Usuario usuario = Usuario.crear(datosConClaveEncriptada, rolPropietario);
 
+        persistencePort.guardarUsuario(usuario);
+    }
+
+    @Override
+    public void crearEmpleado(DatosCreacionUsuario datos) {
+        validar(datos);
+        String claveEncriptada = passwordEncoderPort.encode(datos.getClave());
+        DatosCreacionUsuario datosConClaveEncriptada = DatosCreacionUsuario.builder()
+                .nombre(datos.getNombre())
+                .apellido(datos.getApellido())
+                .documento(datos.getDocumento())
+                .celular(datos.getCelular())
+                .fechaNacimiento(datos.getFechaNacimiento())
+                .correo(datos.getCorreo())
+                .clave(claveEncriptada)
+                .build();
+        // Rol por nombre; en BD se persiste el role_id (adapter resuelve con findByName).
+        Rol rolEmpleado = new Rol(null, "EMPLEADO");
+        Usuario usuario = Usuario.crear(datosConClaveEncriptada, rolEmpleado);
         persistencePort.guardarUsuario(usuario);
     }
 

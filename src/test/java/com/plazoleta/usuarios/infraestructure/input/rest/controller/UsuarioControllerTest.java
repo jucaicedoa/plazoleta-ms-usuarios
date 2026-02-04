@@ -2,6 +2,7 @@ package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
@@ -9,7 +10,9 @@ import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
 import com.plazoleta.usuarios.infraestructure.exceptionhandler.GlobalExceptionHandler;
+import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearEmpleadoRequestDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
+import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearEmpleadoRestMapper;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,9 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.time.LocalDate;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -43,6 +44,9 @@ class UsuarioControllerTest {
 
     @Mock
     private CrearPropietarioRestMapper crearPropietarioRestMapper;
+
+    @Mock
+    private CrearEmpleadoRestMapper crearEmpleadoRestMapper;
 
     @InjectMocks
     private UsuarioController controller;
@@ -321,6 +325,41 @@ class UsuarioControllerTest {
                 .build();
     }
 
+    @Test
+    void deberiaCrearEmpleadoYRetornar201() throws Exception {
+        // Arrange
+        CrearEmpleadoRequestDto requestDto = crearEmpleadoRequestDtoValido();
+        CrearEmpleadoDto applicationDto = new CrearEmpleadoDto();
+
+        when(crearEmpleadoRestMapper.toApplicationDto(any(CrearEmpleadoRequestDto.class))).thenReturn(applicationDto);
+        doNothing().when(usuarioHandler).crearEmpleado(any(CrearEmpleadoDto.class));
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/usuarios/empleado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isCreated());
+
+        verify(crearEmpleadoRestMapper, times(1)).toApplicationDto(any(CrearEmpleadoRequestDto.class));
+        verify(usuarioHandler, times(1)).crearEmpleado(any(CrearEmpleadoDto.class));
+    }
+
+    @Test
+    void deberiaRetornar400CuandoCrearEmpleadoConNombreVacio() throws Exception {
+        // Arrange
+        CrearEmpleadoRequestDto dto = crearEmpleadoRequestDtoValido();
+        dto.setNombre("");
+
+        // Act & Assert
+        mockMvc.perform(post("/api/v1/usuarios/empleado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.nombre").exists());
+
+        verify(usuarioHandler, never()).crearEmpleado(any());
+    }
+
     private CrearPropietarioRequestDto crearRequestDtoValido() {
         CrearPropietarioRequestDto dto = new CrearPropietarioRequestDto();
         dto.setNombre("Juan");
@@ -330,6 +369,18 @@ class UsuarioControllerTest {
         dto.setFechaNacimiento(LocalDate.now().minusYears(25));
         dto.setCorreo("juan@example.com");
         dto.setClave("password123");
+        return dto;
+    }
+
+    private CrearEmpleadoRequestDto crearEmpleadoRequestDtoValido() {
+        CrearEmpleadoRequestDto dto = new CrearEmpleadoRequestDto();
+        dto.setNombre("Pedro");
+        dto.setApellido("García");
+        dto.setDocumento("87654321");
+        dto.setCelular("+573009876543");
+        dto.setFechaNacimiento(LocalDate.now().minusYears(22));
+        dto.setCorreo("pedro@restaurante.com");
+        dto.setClave("empleado123");
         return dto;
     }
 }

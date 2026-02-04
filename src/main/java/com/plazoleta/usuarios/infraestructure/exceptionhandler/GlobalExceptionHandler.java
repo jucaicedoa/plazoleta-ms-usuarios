@@ -1,5 +1,6 @@
 package com.plazoleta.usuarios.infraestructure.exceptionhandler;
 
+import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
 import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
@@ -74,6 +75,12 @@ public class GlobalExceptionHandler {
         Map<String, Object> response = createErrorResponse("VALOR_EXCEDE_LONGITUD", ex.getMessage(), HttpStatus.BAD_REQUEST);
         response.put(KEY_CAMPO, ex.getCampo());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<Map<String, Object>> handleCredencialesInvalidas(CredencialesInvalidasException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(createErrorResponse("CREDENCIALES_INVALIDAS", ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }
 
     @ExceptionHandler(CampoObligatorioException.class)
