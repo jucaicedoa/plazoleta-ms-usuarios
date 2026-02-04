@@ -3,6 +3,9 @@ package com.plazoleta.usuarios.infraestructure.configuration;
 import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
 import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
+import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UsuarioEntityMapper;
+import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
+import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,13 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BeanConfigurationTest {
 
     @Mock
-    private UsuarioPersistencePort usuarioPersistencePort;
+    private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
+    private UsuarioEntityMapper usuarioEntityMapper;
 
     private BeanConfiguration beanConfiguration;
 
     @BeforeEach
     void setUp() {
-        beanConfiguration = new BeanConfiguration(usuarioPersistencePort);
+        beanConfiguration = new BeanConfiguration(usuarioRepository, roleRepository, usuarioEntityMapper);
     }
 
     @Test
@@ -47,8 +56,16 @@ class BeanConfigurationTest {
 
         // Assert
         assertNotNull(usuarioServicePort);
-        // Verificar que es una instancia de UsuarioServicePort (puede ser implementación anónima)
         assertTrue(usuarioServicePort instanceof UsuarioServicePort);
+    }
+
+    @Test
+    void deberiaCrearUsuarioPersistencePortBean() {
+        // Act
+        UsuarioPersistencePort usuarioPersistencePort = beanConfiguration.usuarioPersistencePort();
+
+        // Assert
+        assertNotNull(usuarioPersistencePort);
     }
 
     @Test

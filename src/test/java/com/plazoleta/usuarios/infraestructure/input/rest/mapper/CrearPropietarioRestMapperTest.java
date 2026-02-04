@@ -7,8 +7,8 @@ import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class CrearPropietarioRestMapperTest {
 

@@ -1,23 +1,25 @@
 package com.plazoleta.usuarios.infraestructure.configuration;
 
 import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
-import com.plazoleta.usuarios.domain.model.DatosCreacionUsuario;
-import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
 import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
-import com.plazoleta.usuarios.domain.usecase.CrearPropietarioUseCase;
-import com.plazoleta.usuarios.domain.usecase.ObtenerUsuarioPorIdUseCase;
+import com.plazoleta.usuarios.domain.usecase.UsuarioUseCase;
+import com.plazoleta.usuarios.infraestructure.out.jpa.adapter.UsuarioJpaAdapter;
+import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UsuarioEntityMapper;
+import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
+import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 @RequiredArgsConstructor
 public class BeanConfiguration {
 
-    private final UsuarioPersistencePort usuarioPersistencePort;
+    private final UsuarioRepository usuarioRepository;
+    private final RoleRepository roleRepository;
+    private final UsuarioEntityMapper usuarioEntityMapper;
 
     @Bean
     public PasswordEncoderPort passwordEncoderPort() {
@@ -25,23 +27,12 @@ public class BeanConfiguration {
     }
 
     @Bean
-    @Primary
+    public UsuarioPersistencePort usuarioPersistencePort() {
+        return new UsuarioJpaAdapter(usuarioRepository, roleRepository, usuarioEntityMapper);
+    }
+
+    @Bean
     public UsuarioServicePort usuarioServicePort() {
-        CrearPropietarioUseCase crearPropietarioUseCase =
-                new CrearPropietarioUseCase(usuarioPersistencePort, passwordEncoderPort());
-        ObtenerUsuarioPorIdUseCase obtenerUsuarioUseCase =
-                new ObtenerUsuarioPorIdUseCase(usuarioPersistencePort);
-
-        return new UsuarioServicePort() {
-            @Override
-            public void crearPropietario(DatosCreacionUsuario datos) {
-                crearPropietarioUseCase.crearPropietario(datos);
-            }
-
-            @Override
-            public Usuario obtenerUsuarioPorId(Integer id) {
-                return obtenerUsuarioUseCase.obtenerUsuarioPorId(id);
-            }
-        };
+        return new UsuarioUseCase(usuarioPersistencePort(), passwordEncoderPort());
     }
 }

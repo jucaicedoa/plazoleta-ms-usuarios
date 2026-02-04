@@ -28,7 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
-class CrearPropietarioUseCaseTest {
+class UsuarioUseCaseTest {
 
     @Mock
     private UsuarioPersistencePort persistencePort;
@@ -36,11 +36,11 @@ class CrearPropietarioUseCaseTest {
     @Mock
     private PasswordEncoderPort passwordEncoderPort;
 
-    private CrearPropietarioUseCase useCase;
+    private UsuarioUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new CrearPropietarioUseCase(persistencePort, passwordEncoderPort);
+        useCase = new UsuarioUseCase(persistencePort, passwordEncoderPort);
     }
 
     @Test

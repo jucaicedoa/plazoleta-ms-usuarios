@@ -1,22 +1,24 @@
 package com.plazoleta.usuarios.infraestructure.exceptionhandler;
 
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
+import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
+import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
+import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
+import com.plazoleta.usuarios.domain.exception.RolNoEncontradoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
+import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,6 +84,22 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void deberiaManejarRolNoEncontradoException() {
+        // Arrange
+        RolNoEncontradoException exception = new RolNoEncontradoException("Rol PROPIETARIO no encontrado en la base de datos");
+
+        // Act
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRolNoEncontrado(exception);
+
+        // Assert
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("ROL_NO_ENCONTRADO", response.getBody().get("codigo"));
+        assertEquals("Rol PROPIETARIO no encontrado en la base de datos", response.getBody().get("mensaje"));
+        assertEquals(404, response.getBody().get("status"));
+    }
+
+    @Test
     void deberiaManejarMethodArgumentNotValidException() {
         // Arrange
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
@@ -108,108 +126,121 @@ class GlobalExceptionHandlerTest {
         assertEquals("El correo es inválido", errores.get("correo"));
     }
 
-    @ParameterizedTest
-    @MethodSource("providerErroresCampoMuyLargo")
-    void deberiaManejarDataIntegrityViolationException_CampoMuyLargo(
-            String mensajeError, String mensajeEsperado, String campoEsperado) {
-        // Arrange
-        DataIntegrityViolationException exception = new DataIntegrityViolationException(mensajeError);
+    @Test
+    void deberiaManejarCorreoYaRegistradoException() {
+        CorreoYaRegistradoException exception = new CorreoYaRegistradoException();
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDataIntegrityViolation(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCorreoYaRegistrado(exception);
 
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("ERROR_BASE_DATOS", response.getBody().get("codigo"));
-        assertEquals(mensajeEsperado, response.getBody().get("mensaje"));
-        assertEquals(campoEsperado, response.getBody().get("campo"));
-        assertNotNull(response.getBody().get("detalle"));
-    }
-
-    private static Stream<Arguments> providerErroresCampoMuyLargo() {
-        return Stream.of(
-                Arguments.of(
-                        "ERROR: el valor es demasiado largo para el tipo character varying(13) [phone]",
-                        "El número de celular no puede tener más de 13 caracteres",
-                        "celular"
-                ),
-                Arguments.of(
-                        "ERROR: el valor es demasiado largo para el tipo character varying [document_number]",
-                        "El número de documento excede la longitud máxima permitida",
-                        "documento"
-                ),
-                Arguments.of(
-                        "ERROR: el valor es demasiado largo para el tipo character varying [email]",
-                        "El correo electrónico excede la longitud máxima permitida",
-                        "correo"
-                ),
-                Arguments.of(
-                        "ERROR: el valor es demasiado largo para el tipo character varying [first_name]",
-                        "El nombre excede la longitud máxima permitida",
-                        "nombre"
-                ),
-                Arguments.of(
-                        "ERROR: el valor es demasiado largo para el tipo character varying [last_name]",
-                        "El apellido excede la longitud máxima permitida",
-                        "apellido"
-                )
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("providerErroresDataIntegrity")
-    void deberiaManejarDataIntegrityViolationException_Varios(
-            String mensajeError, String mensajeEsperado, String campoEsperado) {
-        // Arrange
-        DataIntegrityViolationException exception = new DataIntegrityViolationException(mensajeError);
-
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDataIntegrityViolation(exception);
-
-        // Assert
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("ERROR_BASE_DATOS", response.getBody().get("codigo"));
-        assertEquals(mensajeEsperado, response.getBody().get("mensaje"));
-        assertEquals(campoEsperado, response.getBody().get("campo"));
-    }
-
-    private static Stream<Arguments> providerErroresDataIntegrity() {
-        return Stream.of(
-                Arguments.of(
-                        "ERROR: duplicate key value violates unique constraint [email]",
-                        "Ya existe un usuario con este correo electrónico",
-                        "correo"
-                ),
-                Arguments.of(
-                        "ERROR: duplicate key value violates unique constraint [document]",
-                        "Ya existe un usuario con este número de documento",
-                        "documento"
-                ),
-                Arguments.of(
-                        "ERROR: algún error desconocido",
-                        "Error al guardar los datos en la base de datos",
-                        "desconocido"
-                )
-        );
+        assertEquals("CORREO_YA_REGISTRADO", response.getBody().get("codigo"));
+        assertEquals("Ya existe un usuario con este correo electrónico", response.getBody().get("mensaje"));
+        assertEquals("correo", response.getBody().get("campo"));
+        assertEquals(409, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarRuntimeException() {
-        // Arrange
-        RuntimeException exception = new RuntimeException("Error inesperado");
+    void deberiaManejarCorreoYaRegistradoExceptionConMensajePersonalizado() {
+        String mensajePersonalizado = "Ya existe un registro con estos datos";
+        CorreoYaRegistradoException exception = new CorreoYaRegistradoException(mensajePersonalizado);
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRuntimeException(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCorreoYaRegistrado(exception);
 
-        // Assert
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("ERROR_INTERNO", response.getBody().get("codigo"));
-        assertEquals("Ha ocurrido un error inesperado. Por favor, contacta al administrador", response.getBody().get("mensaje"));
-        assertEquals("Error inesperado", response.getBody().get("detalleInterno"));
-        assertEquals(500, response.getBody().get("status"));
+        assertEquals("CORREO_YA_REGISTRADO", response.getBody().get("codigo"));
+        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
+        assertEquals("correo", response.getBody().get("campo"));
+        assertEquals(409, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarDocumentoYaRegistradoException() {
+        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException();
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentoYaRegistrado(exception);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("DOCUMENTO_YA_REGISTRADO", response.getBody().get("codigo"));
+        assertEquals("Ya existe un usuario con este número de documento", response.getBody().get("mensaje"));
+        assertEquals("documento", response.getBody().get("campo"));
+        assertEquals(409, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarDocumentoYaRegistradoExceptionConMensajePersonalizado() {
+        String mensajePersonalizado = "El documento ya está registrado en el sistema";
+        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException(mensajePersonalizado);
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentoYaRegistrado(exception);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("DOCUMENTO_YA_REGISTRADO", response.getBody().get("codigo"));
+        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
+        assertEquals("documento", response.getBody().get("campo"));
+        assertEquals(409, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarValorExcedeLongitudException() {
+        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(
+                "El número de celular no puede tener más de 13 caracteres", "celular");
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValorExcedeLongitud(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("VALOR_EXCEDE_LONGITUD", response.getBody().get("codigo"));
+        assertEquals("El número de celular no puede tener más de 13 caracteres", response.getBody().get("mensaje"));
+        assertEquals("celular", response.getBody().get("campo"));
+        assertEquals(400, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarValorExcedeLongitudExceptionConCampoNull() {
+        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(
+                "El valor excede la longitud máxima permitida", null);
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValorExcedeLongitud(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("VALOR_EXCEDE_LONGITUD", response.getBody().get("codigo"));
+        assertEquals("El valor excede la longitud máxima permitida", response.getBody().get("mensaje"));
+        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals(400, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarCampoObligatorioException() {
+        CampoObligatorioException exception = new CampoObligatorioException();
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoObligatorio(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("CAMPO_OBLIGATORIO", response.getBody().get("codigo"));
+        assertEquals("Falta un campo obligatorio", response.getBody().get("mensaje"));
+        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals(400, response.getBody().get("status"));
+    }
+
+    @Test
+    void deberiaManejarCampoObligatorioExceptionConMensajePersonalizado() {
+        String mensajePersonalizado = "Error al guardar los datos en la base de datos";
+        CampoObligatorioException exception = new CampoObligatorioException(mensajePersonalizado);
+
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoObligatorio(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("CAMPO_OBLIGATORIO", response.getBody().get("codigo"));
+        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
+        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals(400, response.getBody().get("status"));
     }
 
     @Test

@@ -1,7 +1,7 @@
-package com.plazoleta.usuarios.infraestructure.input.rest.mapper;
+package com.plazoleta.usuarios.application.mapper;
 
+import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.domain.model.Usuario;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.UsuarioResponseDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.ReportingPolicy;
