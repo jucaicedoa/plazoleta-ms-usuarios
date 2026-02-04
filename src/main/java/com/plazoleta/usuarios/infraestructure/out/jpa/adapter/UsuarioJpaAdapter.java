@@ -1,15 +1,16 @@
 package com.plazoleta.usuarios.infraestructure.out.jpa.adapter;
 
+import com.plazoleta.usuarios.domain.exception.RolNoEncontradoException;
 import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
 import com.plazoleta.usuarios.infraestructure.out.jpa.entity.UsuarioEntity;
+import com.plazoleta.usuarios.infraestructure.out.jpa.exception.DataIntegrityExceptionTranslator;
 import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UsuarioEntityMapper;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.dao.DataIntegrityViolationException;
 
-@Component
 @RequiredArgsConstructor
 public class UsuarioJpaAdapter implements UsuarioPersistencePort {
 
@@ -21,10 +22,15 @@ public class UsuarioJpaAdapter implements UsuarioPersistencePort {
     public Usuario guardarUsuario(Usuario usuario) {
         UsuarioEntity entity = mapper.toEntity(usuario);
         entity.setRole(roleRepository.findByName("PROPIETARIO").orElseThrow(
-                () -> new RuntimeException("Rol PROPIETARIO no encontrado en la base de datos")
+                () -> new RolNoEncontradoException("Rol PROPIETARIO no encontrado en la base de datos")
         ));
-        UsuarioEntity savedEntity = usuarioRepository.save(entity);
-        return mapper.toDomain(savedEntity);
+        try {
+            UsuarioEntity savedEntity = usuarioRepository.save(entity);
+            return mapper.toDomain(savedEntity);
+        } catch (DataIntegrityViolationException e) {
+            DataIntegrityExceptionTranslator.throwSpecific(e);
+            return null;
+        }
     }
 
     @Override

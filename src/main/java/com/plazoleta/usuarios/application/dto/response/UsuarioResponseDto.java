@@ -1,4 +1,4 @@
-package com.plazoleta.usuarios.infraestructure.input.rest.dto;
+package com.plazoleta.usuarios.application.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

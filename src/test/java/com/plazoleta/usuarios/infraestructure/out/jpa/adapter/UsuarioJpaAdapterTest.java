@@ -1,5 +1,9 @@
 package com.plazoleta.usuarios.infraestructure.out.jpa.adapter;
 
+import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
+import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
+import com.plazoleta.usuarios.domain.exception.RolNoEncontradoException;
+import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
 import com.plazoleta.usuarios.domain.model.Rol;
 import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.infraestructure.out.jpa.entity.RoleEntity;
@@ -12,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import java.time.LocalDate;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -79,8 +84,8 @@ class UsuarioJpaAdapterTest {
         when(roleRepository.findByName("PROPIETARIO")).thenReturn(Optional.empty());
 
         // Act & Assert
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        RolNoEncontradoException exception = assertThrows(
+                RolNoEncontradoException.class,
                 () -> adapter.guardarUsuario(usuario)
         );
 
@@ -173,6 +178,70 @@ class UsuarioJpaAdapterTest {
         assertEquals(null, resultado);
         verify(usuarioRepository, times(1)).findById(999L);
         verify(mapper, never()).toDomain(any());
+    }
+
+    @Test
+    void deberiaLanzarCorreoYaRegistradoExceptionCuandoHayDataIntegrityViolationEnEmail() {
+        // Arrange
+        Usuario usuario = crearUsuario();
+        UsuarioEntity usuarioEntity = new UsuarioEntity();
+        RoleEntity roleEntity = crearRoleEntity();
+
+        when(mapper.toEntity(usuario)).thenReturn(usuarioEntity);
+        when(roleRepository.findByName("PROPIETARIO")).thenReturn(Optional.of(roleEntity));
+        when(usuarioRepository.save(any(UsuarioEntity.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint [email]"));
+
+        // Act & Assert
+        assertThrows(
+                CorreoYaRegistradoException.class,
+                () -> adapter.guardarUsuario(usuario)
+        );
+
+        verify(usuarioRepository, times(1)).save(any(UsuarioEntity.class));
+    }
+
+    @Test
+    void deberiaLanzarDocumentoYaRegistradoExceptionCuandoHayDataIntegrityViolationEnDocument() {
+        // Arrange
+        Usuario usuario = crearUsuario();
+        UsuarioEntity usuarioEntity = new UsuarioEntity();
+        RoleEntity roleEntity = crearRoleEntity();
+
+        when(mapper.toEntity(usuario)).thenReturn(usuarioEntity);
+        when(roleRepository.findByName("PROPIETARIO")).thenReturn(Optional.of(roleEntity));
+        when(usuarioRepository.save(any(UsuarioEntity.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key value violates unique constraint [document]"));
+
+        // Act & Assert
+        assertThrows(
+                DocumentoYaRegistradoException.class,
+                () -> adapter.guardarUsuario(usuario)
+        );
+
+        verify(usuarioRepository, times(1)).save(any(UsuarioEntity.class));
+    }
+
+    @Test
+    void deberiaLanzarValorExcedeLongitudExceptionCuandoHayDataIntegrityViolationPorValorMuyLargo() {
+        // Arrange
+        Usuario usuario = crearUsuario();
+        UsuarioEntity usuarioEntity = new UsuarioEntity();
+        RoleEntity roleEntity = crearRoleEntity();
+
+        when(mapper.toEntity(usuario)).thenReturn(usuarioEntity);
+        when(roleRepository.findByName("PROPIETARIO")).thenReturn(Optional.of(roleEntity));
+        when(usuarioRepository.save(any(UsuarioEntity.class)))
+                .thenThrow(new DataIntegrityViolationException("value too long for type character varying(13) [phone]"));
+
+        // Act & Assert
+        ValorExcedeLongitudException exception = assertThrows(
+                ValorExcedeLongitudException.class,
+                () -> adapter.guardarUsuario(usuario)
+        );
+
+        assertEquals("celular", exception.getCampo());
+        verify(usuarioRepository, times(1)).save(any(UsuarioEntity.class));
     }
 
     // Métodos auxiliares

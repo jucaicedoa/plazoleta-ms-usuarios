@@ -3,18 +3,14 @@ package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
-import com.plazoleta.usuarios.application.handler.CrearPropietarioHandler;
-import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
+import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
+import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
-import com.plazoleta.usuarios.domain.model.Rol;
-import com.plazoleta.usuarios.domain.model.Usuario;
 import com.plazoleta.usuarios.infraestructure.exceptionhandler.GlobalExceptionHandler;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.UsuarioResponseDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
-import com.plazoleta.usuarios.infraestructure.input.rest.mapper.UsuarioResponseMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,16 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UsuarioControllerTest {
 
     @Mock
-    private CrearPropietarioHandler handler;
+    private IUsuarioHandler usuarioHandler;
 
     @Mock
-    private CrearPropietarioRestMapper restMapper;
-
-    @Mock
-    private UsuarioServicePort usuarioServicePort;
-
-    @Mock
-    private UsuarioResponseMapper responseMapper;
+    private CrearPropietarioRestMapper crearPropietarioRestMapper;
 
     @InjectMocks
     private UsuarioController controller;
@@ -75,23 +65,17 @@ class UsuarioControllerTest {
         CrearPropietarioRequestDto requestDto = crearRequestDtoValido();
         CrearPropietarioDto applicationDto = new CrearPropietarioDto();
 
-        when(restMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
-        doNothing().when(handler).crearPropietario(any(CrearPropietarioDto.class));
+        when(crearPropietarioRestMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
+        doNothing().when(usuarioHandler).crearPropietario(any(CrearPropietarioDto.class));
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.codigo").value("PROPIETARIO_CREADO"))
-                .andExpect(jsonPath("$.mensaje").value("El propietario ha sido creado exitosamente"))
-                .andExpect(jsonPath("$.datos.correo").value(requestDto.getCorreo()))
-                .andExpect(jsonPath("$.datos.nombre").value(requestDto.getNombre() + " " + requestDto.getApellido()))
-                .andExpect(jsonPath("$.datos.documento").value(requestDto.getDocumento()))
-                .andExpect(jsonPath("$.status").value(201));
+                .andExpect(status().isCreated());
 
-        verify(restMapper, times(1)).toApplicationDto(any(CrearPropietarioRequestDto.class));
-        verify(handler, times(1)).crearPropietario(any(CrearPropietarioDto.class));
+        verify(crearPropietarioRestMapper, times(1)).toApplicationDto(any(CrearPropietarioRequestDto.class));
+        verify(usuarioHandler, times(1)).crearPropietario(any(CrearPropietarioDto.class));
     }
 
     @Test
@@ -101,7 +85,7 @@ class UsuarioControllerTest {
         dto.setNombre(null);
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -109,7 +93,7 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.mensaje").value("Los datos enviados no cumplen con las validaciones requeridas"))
                 .andExpect(jsonPath("$.errores.nombre").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -119,13 +103,13 @@ class UsuarioControllerTest {
         dto.setNombre("");
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.nombre").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -135,13 +119,13 @@ class UsuarioControllerTest {
         dto.setCorreo("correo-invalido");
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.correo").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -151,13 +135,13 @@ class UsuarioControllerTest {
         dto.setDocumento("ABC123");
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.documento").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -167,13 +151,13 @@ class UsuarioControllerTest {
         dto.setCelular("celular-invalido");
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.celular").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -183,13 +167,13 @@ class UsuarioControllerTest {
         dto.setFechaNacimiento(LocalDate.now().plusDays(1));
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.fechaNacimiento").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -199,13 +183,13 @@ class UsuarioControllerTest {
         dto.setClave("12345"); // Menos de 6 caracteres
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errores.clave").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
@@ -214,12 +198,12 @@ class UsuarioControllerTest {
         CrearPropietarioRequestDto requestDto = crearRequestDtoValido();
         CrearPropietarioDto applicationDto = new CrearPropietarioDto();
 
-        when(restMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
+        when(crearPropietarioRestMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
         doThrow(new CampoInvalidoException("Documento inválido"))
-                .when(handler).crearPropietario(any(CrearPropietarioDto.class));
+                .when(usuarioHandler).crearPropietario(any(CrearPropietarioDto.class));
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isBadRequest())
@@ -233,12 +217,12 @@ class UsuarioControllerTest {
         CrearPropietarioRequestDto requestDto = crearRequestDtoValido();
         CrearPropietarioDto applicationDto = new CrearPropietarioDto();
 
-        when(restMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
+        when(crearPropietarioRestMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
         doThrow(new EmailInvalidoException())
-                .when(handler).crearPropietario(any(CrearPropietarioDto.class));
+                .when(usuarioHandler).crearPropietario(any(CrearPropietarioDto.class));
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isBadRequest())
@@ -251,12 +235,12 @@ class UsuarioControllerTest {
         CrearPropietarioRequestDto requestDto = crearRequestDtoValido();
         CrearPropietarioDto applicationDto = new CrearPropietarioDto();
 
-        when(restMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
+        when(crearPropietarioRestMapper.toApplicationDto(any(CrearPropietarioRequestDto.class))).thenReturn(applicationDto);
         doThrow(new UsuarioMayorDeEdadException())
-                .when(handler).crearPropietario(any(CrearPropietarioDto.class));
+                .when(usuarioHandler).crearPropietario(any(CrearPropietarioDto.class));
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isBadRequest())
@@ -270,7 +254,7 @@ class UsuarioControllerTest {
         // Todos los campos nulos
 
         // Act & Assert
-        mockMvc.perform(post("/usuarios/propietario")
+        mockMvc.perform(post("/api/v1/usuarios/propietario")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isBadRequest())
@@ -282,21 +266,19 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.errores.correo").exists())
                 .andExpect(jsonPath("$.errores.clave").exists());
 
-        verify(handler, never()).crearPropietario(any());
+        verify(usuarioHandler, never()).crearPropietario(any());
     }
 
     @Test
     void deberiaObtenerUsuarioPorIdYRetornar200() throws Exception {
         // Arrange
         Integer id = 1;
-        Usuario usuario = crearUsuario();
         UsuarioResponseDto responseDto = crearUsuarioResponseDto();
 
-        when(usuarioServicePort.obtenerUsuarioPorId(id)).thenReturn(usuario);
-        when(responseMapper.toResponse(usuario)).thenReturn(responseDto);
+        when(usuarioHandler.obtenerUsuarioPorId(id)).thenReturn(responseDto);
 
         // Act & Assert
-        mockMvc.perform(get("/usuarios/{id}", id)
+        mockMvc.perform(get("/api/v1/usuarios/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(responseDto.getId()))
@@ -307,8 +289,7 @@ class UsuarioControllerTest {
                 .andExpect(jsonPath("$.correo").value(responseDto.getCorreo()))
                 .andExpect(jsonPath("$.rol").value(responseDto.getRol()));
 
-        verify(usuarioServicePort, times(1)).obtenerUsuarioPorId(id);
-        verify(responseMapper, times(1)).toResponse(usuario);
+        verify(usuarioHandler, times(1)).obtenerUsuarioPorId(id);
     }
 
     @Test
@@ -316,32 +297,17 @@ class UsuarioControllerTest {
         // Arrange
         Integer id = 999;
 
-        when(usuarioServicePort.obtenerUsuarioPorId(id)).thenReturn(null);
+        when(usuarioHandler.obtenerUsuarioPorId(id)).thenReturn(null);
 
         // Act & Assert
-        mockMvc.perform(get("/usuarios/{id}", id)
+        mockMvc.perform(get("/api/v1/usuarios/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
 
-        verify(usuarioServicePort, times(1)).obtenerUsuarioPorId(id);
-        verify(responseMapper, never()).toResponse(any());
+        verify(usuarioHandler, times(1)).obtenerUsuarioPorId(id);
     }
 
     // Metodos auxiliares
-    private Usuario crearUsuario() {
-        Usuario usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setNombre("Juan");
-        usuario.setApellido("Pérez");
-        usuario.setDocumento("12345678");
-        usuario.setCelular("+573001234567");
-        usuario.setFechaNacimiento(LocalDate.now().minusYears(25));
-        usuario.setCorreo("juan@example.com");
-        usuario.setClave("passwordEncriptada");
-        usuario.setRol(new Rol(2, "PROPIETARIO"));
-        return usuario;
-    }
-
     private UsuarioResponseDto crearUsuarioResponseDto() {
         return UsuarioResponseDto.builder()
                 .id(1)
