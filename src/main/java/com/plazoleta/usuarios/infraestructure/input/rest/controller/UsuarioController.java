@@ -1,9 +1,12 @@
 package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 
+import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
+import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearEmpleadoRequestDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
+import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearEmpleadoRestMapper;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,6 +33,7 @@ public class UsuarioController {
 
     private final IUsuarioHandler usuarioHandler;
     private final CrearPropietarioRestMapper crearPropietarioRestMapper;
+    private final CrearEmpleadoRestMapper crearEmpleadoRestMapper;
 
     @Operation(summary = "Obtener usuario por ID")
     @ApiResponses(value = {
@@ -57,6 +61,20 @@ public class UsuarioController {
     public ResponseEntity<Void> crearPropietario(@Valid @RequestBody CrearPropietarioRequestDto requestDto) {
         CrearPropietarioDto dto = crearPropietarioRestMapper.toApplicationDto(requestDto);
         usuarioHandler.crearPropietario(dto);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Crear un empleado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Empleado creado", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos o usuario menor de edad", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Solo un propietario puede crear empleados", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Correo ya registrado", content = @Content)
+    })
+    @PostMapping("/empleado")
+    public ResponseEntity<Void> crearEmpleado(@Valid @RequestBody CrearEmpleadoRequestDto requestDto) {
+        CrearEmpleadoDto dto = crearEmpleadoRestMapper.toApplicationDto(requestDto);
+        usuarioHandler.crearEmpleado(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }

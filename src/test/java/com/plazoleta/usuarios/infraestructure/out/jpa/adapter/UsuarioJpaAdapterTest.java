@@ -244,6 +244,43 @@ class UsuarioJpaAdapterTest {
         verify(usuarioRepository, times(1)).save(any(UsuarioEntity.class));
     }
 
+    @Test
+    void deberiaBuscarUsuarioPorCorreoCuandoExiste() {
+        // Arrange
+        String correo = "juan@example.com";
+        UsuarioEntity usuarioEntity = new UsuarioEntity();
+        usuarioEntity.setId(1);
+        usuarioEntity.setCorreo(correo);
+        Usuario usuario = crearUsuario();
+
+        when(usuarioRepository.findByCorreo(correo)).thenReturn(Optional.of(usuarioEntity));
+        when(mapper.toDomain(usuarioEntity)).thenReturn(usuario);
+
+        // Act
+        Optional<Usuario> resultado = adapter.buscarPorCorreo(correo);
+
+        // Assert
+        assertTrue(resultado.isPresent());
+        assertEquals(usuario, resultado.get());
+        verify(usuarioRepository, times(1)).findByCorreo(correo);
+        verify(mapper, times(1)).toDomain(usuarioEntity);
+    }
+
+    @Test
+    void deberiaRetornarEmptyCuandoBuscarPorCorreoNoEncuentraUsuario() {
+        // Arrange
+        String correo = "noexiste@example.com";
+        when(usuarioRepository.findByCorreo(correo)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Usuario> resultado = adapter.buscarPorCorreo(correo);
+
+        // Assert
+        assertTrue(resultado.isEmpty());
+        verify(usuarioRepository, times(1)).findByCorreo(correo);
+        verify(mapper, never()).toDomain(any());
+    }
+
     // Métodos auxiliares
     private Usuario crearUsuario() {
         Usuario usuario = new Usuario();

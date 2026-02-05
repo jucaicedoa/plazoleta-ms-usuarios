@@ -10,6 +10,7 @@ import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class UsuarioJpaAdapter implements UsuarioPersistencePort {
@@ -21,8 +22,11 @@ public class UsuarioJpaAdapter implements UsuarioPersistencePort {
     @Override
     public Usuario guardarUsuario(Usuario usuario) {
         UsuarioEntity entity = mapper.toEntity(usuario);
-        entity.setRole(roleRepository.findByName("PROPIETARIO").orElseThrow(
-                () -> new RolNoEncontradoException("Rol PROPIETARIO no encontrado en la base de datos")
+        String nombreRol = usuario.getRol() != null && usuario.getRol().getNombre() != null
+                ? usuario.getRol().getNombre()
+                : "PROPIETARIO";
+        entity.setRole(roleRepository.findByName(nombreRol).orElseThrow(
+                () -> new RolNoEncontradoException("Rol " + nombreRol + " no encontrado en la base de datos")
         ));
         try {
             UsuarioEntity savedEntity = usuarioRepository.save(entity);
@@ -42,5 +46,11 @@ public class UsuarioJpaAdapter implements UsuarioPersistencePort {
     public Usuario obtenerUsuarioPorId(Integer id) {
         UsuarioEntity entity = usuarioRepository.findById(id.longValue()).orElse(null);
         return entity != null ? mapper.toDomain(entity) : null;
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorCorreo(String correo) {
+        return usuarioRepository.findByCorreo(correo)
+                .map(mapper::toDomain);
     }
 }

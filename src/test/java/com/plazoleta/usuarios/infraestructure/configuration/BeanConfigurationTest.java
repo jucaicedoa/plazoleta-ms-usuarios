@@ -1,6 +1,7 @@
 package com.plazoleta.usuarios.infraestructure.configuration;
 
 import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
+import com.plazoleta.usuarios.domain.spi.JwtProviderPort;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
 import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
 import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UsuarioEntityMapper;
@@ -27,11 +28,14 @@ class BeanConfigurationTest {
     @Mock
     private UsuarioEntityMapper usuarioEntityMapper;
 
+    @Mock
+    private JwtProviderPort jwtProviderPort;
+
     private BeanConfiguration beanConfiguration;
 
     @BeforeEach
     void setUp() {
-        beanConfiguration = new BeanConfiguration(usuarioRepository, roleRepository, usuarioEntityMapper);
+        beanConfiguration = new BeanConfiguration(usuarioRepository, roleRepository, usuarioEntityMapper, jwtProviderPort);
     }
 
     @Test

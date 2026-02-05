@@ -5,5 +5,6 @@ import com.plazoleta.usuarios.domain.model.Usuario;
 
 public interface UsuarioServicePort {
     void crearPropietario(DatosCreacionUsuario datos);
+    void crearEmpleado(DatosCreacionUsuario datos);
     Usuario obtenerUsuarioPorId(Integer id);
 }

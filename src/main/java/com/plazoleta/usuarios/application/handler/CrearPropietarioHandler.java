@@ -1,5 +1,6 @@
 package com.plazoleta.usuarios.application.handler;
 
+import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.mapper.UsuarioRequestMapper;
@@ -22,6 +23,12 @@ public class CrearPropietarioHandler implements IUsuarioHandler {
     public void crearPropietario(CrearPropietarioDto dto) {
         DatosCreacionUsuario datos = mapper.toDatosCreacion(dto);
         usuarioServicePort.crearPropietario(datos);
+    }
+
+    @Override
+    public void crearEmpleado(CrearEmpleadoDto dto) {
+        DatosCreacionUsuario datos = mapper.toDatosCreacion(dto);
+        usuarioServicePort.crearEmpleado(datos);
     }
 
     @Override

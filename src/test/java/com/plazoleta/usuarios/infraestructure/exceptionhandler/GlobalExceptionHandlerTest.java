@@ -1,5 +1,6 @@
 package com.plazoleta.usuarios.infraestructure.exceptionhandler;
 
+import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
 import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
 import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
@@ -15,10 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-
 import java.util.List;
 import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,6 +31,23 @@ class GlobalExceptionHandlerTest {
     @BeforeEach
     void setUp() {
         exceptionHandler = new GlobalExceptionHandler();
+    }
+
+    @Test
+    void deberiaManejarCredencialesInvalidasException() {
+        // Arrange
+        CredencialesInvalidasException exception = new CredencialesInvalidasException("Credenciales inválidas");
+
+        // Act
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCredencialesInvalidas(exception);
+
+        // Assert
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("CREDENCIALES_INVALIDAS", response.getBody().get("codigo"));
+        assertEquals("Credenciales inválidas", response.getBody().get("mensaje"));
+        assertEquals(401, response.getBody().get("status"));
+        assertNotNull(response.getBody().get("timestamp"));
     }
 
     @Test

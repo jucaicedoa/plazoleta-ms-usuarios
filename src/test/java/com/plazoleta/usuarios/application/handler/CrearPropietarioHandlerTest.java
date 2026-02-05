@@ -1,5 +1,6 @@
 package com.plazoleta.usuarios.application.handler;
 
+import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.mapper.UsuarioRequestMapper;
@@ -21,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
@@ -141,6 +143,38 @@ class CrearPropietarioHandlerTest {
         verify(responseMapper, times(0)).toResponse(any());
     }
 
+    @Test
+    void deberiaLlamarAlServicePortParaCrearEmpleado() {
+        // Arrange
+        CrearEmpleadoDto dto = crearEmpleadoApplicationDto();
+        DatosCreacionUsuario datos = crearDatosCreacion();
+
+        when(mapper.toDatosCreacion(dto)).thenReturn(datos);
+        doNothing().when(usuarioServicePort).crearEmpleado(any(DatosCreacionUsuario.class));
+
+        // Act
+        handler.crearEmpleado(dto);
+
+        // Assert
+        verify(mapper, times(1)).toDatosCreacion(dto);
+        verify(usuarioServicePort, times(1)).crearEmpleado(datos);
+    }
+
+    @Test
+    void deberiaPropagrarExcepcionDelServicePortEnCrearEmpleado() {
+        // Arrange
+        CrearEmpleadoDto dto = crearEmpleadoApplicationDto();
+        DatosCreacionUsuario datos = crearDatosCreacion();
+
+        when(mapper.toDatosCreacion(dto)).thenReturn(datos);
+        doThrow(new RuntimeException("Error al crear empleado"))
+                .when(usuarioServicePort).crearEmpleado(any(DatosCreacionUsuario.class));
+
+        // Act & Assert
+        assertThrows(RuntimeException.class, () -> handler.crearEmpleado(dto));
+        verify(usuarioServicePort, times(1)).crearEmpleado(datos);
+    }
+
     // Métodos auxiliares
     private CrearPropietarioDto crearApplicationDto() {
         CrearPropietarioDto dto = new CrearPropietarioDto();
@@ -164,6 +198,18 @@ class CrearPropietarioHandlerTest {
                 .correo("juan@example.com")
                 .clave("password123")
                 .build();
+    }
+
+    private CrearEmpleadoDto crearEmpleadoApplicationDto() {
+        CrearEmpleadoDto dto = new CrearEmpleadoDto();
+        dto.setNombre("Pedro");
+        dto.setApellido("García");
+        dto.setDocumento("87654321");
+        dto.setCelular("+573009876543");
+        dto.setFechaNacimiento(LocalDate.now().minusYears(22));
+        dto.setCorreo("pedro@restaurante.com");
+        dto.setClave("empleado123");
+        return dto;
     }
 
     private Usuario crearUsuario() {

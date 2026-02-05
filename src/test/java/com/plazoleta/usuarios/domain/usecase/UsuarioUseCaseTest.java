@@ -237,8 +237,8 @@ class UsuarioUseCaseTest {
         verify(persistencePort).guardarUsuario(usuarioCaptor.capture());
         Usuario usuario = usuarioCaptor.getValue();
         assertNotNull(usuario.getRol());
-        assertEquals(2, usuario.getRol().getId());
         assertEquals("PROPIETARIO", usuario.getRol().getNombre());
+        // El id no se fija en el dominio; el adapter resuelve el rol por nombre en BD
     }
 
     @Test
@@ -287,6 +287,62 @@ class UsuarioUseCaseTest {
 
         // Assert
         verify(persistencePort, times(1)).guardarUsuario(any(Usuario.class));
+    }
+
+    @Test
+    void deberiaCrearEmpleadoConDatosValidos() {
+        // Arrange
+        DatosCreacionUsuario datos = crearDatosValidos();
+
+        when(persistencePort.existeCorreo(anyString())).thenReturn(false);
+        when(passwordEncoderPort.encode(anyString())).thenReturn("passwordEncriptada");
+        when(persistencePort.guardarUsuario(any(Usuario.class))).thenReturn(new Usuario());
+
+        // Act
+        useCase.crearEmpleado(datos);
+
+        // Assert
+        verify(persistencePort, times(1)).existeCorreo(datos.getCorreo());
+        verify(passwordEncoderPort, times(1)).encode("password123");
+        verify(persistencePort, times(1)).guardarUsuario(any(Usuario.class));
+    }
+
+    @Test
+    void deberiaAsignarRolEmpleadoAlCrear() {
+        // Arrange
+        DatosCreacionUsuario datos = crearDatosValidos();
+        ArgumentCaptor<Usuario> usuarioCaptor = ArgumentCaptor.forClass(Usuario.class);
+
+        when(persistencePort.existeCorreo(anyString())).thenReturn(false);
+        when(passwordEncoderPort.encode(anyString())).thenReturn("passwordEncriptada");
+        when(persistencePort.guardarUsuario(any(Usuario.class))).thenReturn(new Usuario());
+
+        // Act
+        useCase.crearEmpleado(datos);
+
+        // Assert
+        verify(persistencePort).guardarUsuario(usuarioCaptor.capture());
+        Usuario usuario = usuarioCaptor.getValue();
+        assertNotNull(usuario.getRol());
+        assertEquals("EMPLEADO", usuario.getRol().getNombre());
+    }
+
+    @Test
+    void deberiaLanzarExcepcionCuandoCorreoYaExisteEnCrearEmpleado() {
+        // Arrange
+        DatosCreacionUsuario datos = crearDatosValidos();
+
+        when(persistencePort.existeCorreo(anyString())).thenReturn(true);
+
+        // Act & Assert
+        CampoInvalidoException exception = assertThrows(
+                CampoInvalidoException.class,
+                () -> useCase.crearEmpleado(datos)
+        );
+
+        assertEquals("Correo ya registrado", exception.getMessage());
+        verify(persistencePort, times(1)).existeCorreo(datos.getCorreo());
+        verify(persistencePort, never()).guardarUsuario(any());
     }
 
     // Metodo auxiliar para crear datos válidos
