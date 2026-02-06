@@ -7,6 +7,7 @@ import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
 import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
+import com.plazoleta.usuarios.domain.model.TokenClaims;
 import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
 import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
 import com.plazoleta.usuarios.infraestructure.exceptionhandler.GlobalExceptionHandler;
@@ -327,7 +328,8 @@ class UsuarioControllerTest {
 
     @Test
     void deberiaCrearEmpleadoYRetornar201() throws Exception {
-        // Arrange
+        // Arrange: tokenClaims con restauranteId para que el controller asocie el empleado al restaurante
+        TokenClaims tokenClaims = new TokenClaims(1, "propietario@mail.com", "PROPIETARIO", 1);
         CrearEmpleadoRequestDto requestDto = crearEmpleadoRequestDtoValido();
         CrearEmpleadoDto applicationDto = new CrearEmpleadoDto();
 
@@ -336,6 +338,10 @@ class UsuarioControllerTest {
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/usuarios/empleado")
+                        .with(request -> {
+                            request.setAttribute("tokenClaims", tokenClaims);
+                            return request;
+                        })
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isCreated());

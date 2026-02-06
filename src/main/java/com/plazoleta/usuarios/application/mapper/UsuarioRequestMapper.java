@@ -7,6 +7,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public interface UsuarioRequestMapper {
+    @org.mapstruct.Mapping(target = "restauranteId", expression = "java((Integer) null)")
     DatosCreacionUsuario toDatosCreacion(CrearPropietarioDto dto);
     DatosCreacionUsuario toDatosCreacion(CrearEmpleadoDto dto);
 }

@@ -4,6 +4,7 @@ import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
+import com.plazoleta.usuarios.domain.model.TokenClaims;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearEmpleadoRequestDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
 import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearEmpleadoRestMapper;
@@ -14,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -72,8 +74,15 @@ public class UsuarioController {
             @ApiResponse(responseCode = "409", description = "Correo ya registrado", content = @Content)
     })
     @PostMapping("/empleado")
-    public ResponseEntity<Void> crearEmpleado(@Valid @RequestBody CrearEmpleadoRequestDto requestDto) {
+    public ResponseEntity<Void> crearEmpleado(
+            HttpServletRequest request,
+            @Valid @RequestBody CrearEmpleadoRequestDto requestDto) {
+        TokenClaims claims = (TokenClaims) request.getAttribute("tokenClaims");
+        if (claims == null || claims.getRestauranteId() == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         CrearEmpleadoDto dto = crearEmpleadoRestMapper.toApplicationDto(requestDto);
+        dto.setRestauranteId(claims.getRestauranteId());
         usuarioHandler.crearEmpleado(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

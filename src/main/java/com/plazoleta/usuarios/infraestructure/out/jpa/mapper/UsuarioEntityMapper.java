@@ -11,9 +11,11 @@ import org.mapstruct.Mapping;
 public interface UsuarioEntityMapper {
 
     @Mapping(target = "rol", source = "role")
+    @Mapping(target = "restauranteId", source = "restaurantId")
     Usuario toDomain(UsuarioEntity entity);
 
     @Mapping(target = "role", source = "rol")
+    @Mapping(target = "restaurantId", source = "restauranteId")
     UsuarioEntity toEntity(Usuario usuario);
 
     default Rol rolFromEntity(RoleEntity entity) {

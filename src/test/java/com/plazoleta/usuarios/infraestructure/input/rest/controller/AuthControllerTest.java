@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -48,7 +49,7 @@ class AuthControllerTest {
         request.setClave("clave123");
         String tokenEsperado = "eyJhbGciOiJIUzI1NiJ9...";
 
-        when(authServicePort.login("usuario@mail.com", "clave123")).thenReturn(tokenEsperado);
+        when(authServicePort.login("usuario@mail.com", "clave123", null)).thenReturn(tokenEsperado);
 
         // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
@@ -65,7 +66,7 @@ class AuthControllerTest {
         request.setCorreo("usuario@mail.com");
         request.setClave("claveIncorrecta");
 
-        when(authServicePort.login(anyString(), anyString()))
+        when(authServicePort.login(anyString(), anyString(), any()))
                 .thenThrow(new CredencialesInvalidasException("Credenciales inválidas"));
 
         // Act & Assert

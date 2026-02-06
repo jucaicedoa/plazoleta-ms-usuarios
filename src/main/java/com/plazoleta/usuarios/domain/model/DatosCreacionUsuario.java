@@ -12,6 +12,7 @@ import java.time.LocalDate;
  *
  * Este objeto NO incluye el rol, ya que el rol se asigna según la operación
  * (crear propietario, crear empleado) y no viene del usuario.
+ * restauranteId se usa al crear empleados (restaurante del propietario autenticado).
  */
 @Getter
 @AllArgsConstructor
@@ -25,4 +26,6 @@ public class DatosCreacionUsuario {
     private final LocalDate fechaNacimiento;
     private final String correo;
     private final String clave;
+    /** ID del restaurante; obligatorio al crear empleado. */
+    private final Integer restauranteId;
 }

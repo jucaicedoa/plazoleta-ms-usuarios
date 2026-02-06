@@ -23,6 +23,7 @@ class UsuarioTest {
                 .fechaNacimiento(fechaNacimiento)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act
@@ -54,6 +55,7 @@ class UsuarioTest {
                 .fechaNacimiento(fechaNacimiento)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act & Assert
@@ -78,6 +80,7 @@ class UsuarioTest {
                 .fechaNacimiento(null)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act & Assert
@@ -103,6 +106,7 @@ class UsuarioTest {
                 .fechaNacimiento(fechaNacimiento)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act

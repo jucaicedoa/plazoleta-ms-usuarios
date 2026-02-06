@@ -30,7 +30,7 @@ public class AuthController {
     })
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-        String token = authServicePort.login(request.getCorreo(), request.getClave());
+        String token = authServicePort.login(request.getCorreo(), request.getClave(), request.getRestauranteId());
         return ResponseEntity.ok(new LoginResponseDto(token));
     }
 }

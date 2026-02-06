@@ -197,6 +197,7 @@ class CrearPropietarioHandlerTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
     }
 

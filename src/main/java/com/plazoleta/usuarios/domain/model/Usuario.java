@@ -25,6 +25,8 @@ public class Usuario {
     private String correo;
     private String clave;
     private Rol rol;
+    /** ID del restaurante al que pertenece (empleados y propietarios). */
+    private Integer restauranteId;
 
     /**
      * Metodo factory para crear un Usuario con validación de mayor de edad.
@@ -46,6 +48,7 @@ public class Usuario {
                 .correo(datos.getCorreo())
                 .clave(datos.getClave())
                 .rol(rol)
+                .restauranteId(datos.getRestauranteId())
                 .build();
     }
 

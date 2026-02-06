@@ -21,6 +21,7 @@ class DatosCreacionUsuarioTest {
                 .fechaNacimiento(fechaNacimiento)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Assert
@@ -47,7 +48,8 @@ class DatosCreacionUsuarioTest {
                 "+573009876543",
                 fechaNacimiento,
                 "maria@example.com",
-                "securepass"
+                "securepass",
+                null
         );
 
         // Assert

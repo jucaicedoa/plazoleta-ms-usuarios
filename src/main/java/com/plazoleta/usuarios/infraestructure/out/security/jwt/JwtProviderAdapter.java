@@ -18,6 +18,7 @@ public class JwtProviderAdapter implements JwtProviderPort {
 
     private static final String CLAIM_EMAIL = "email";
     private static final String CLAIM_ROLE = "role";
+    private static final String CLAIM_RESTAURANT_ID = "restaurant_id";
 
     private final SecretKey secretKey;
     private final long expirationSeconds;
@@ -30,18 +31,25 @@ public class JwtProviderAdapter implements JwtProviderPort {
 
     @Override
     public String generarToken(Integer id, String correo, String rol) {
+        return generarToken(id, correo, rol, null);
+    }
+
+    @Override
+    public String generarToken(Integer id, String correo, String rol, Integer restauranteId) {
         long now = System.currentTimeMillis();
         Date issuedAt = new Date(now);
         Date expiration = new Date(now + expirationSeconds * 1000);
 
-        return Jwts.builder()
+        var builder = Jwts.builder()
                 .subject(String.valueOf(id))
                 .claim(CLAIM_EMAIL, correo)
                 .claim(CLAIM_ROLE, rol)
                 .issuedAt(issuedAt)
-                .expiration(expiration)
-                .signWith(secretKey)
-                .compact();
+                .expiration(expiration);
+        if (restauranteId != null) {
+            builder.claim(CLAIM_RESTAURANT_ID, restauranteId);
+        }
+        return builder.signWith(secretKey).compact();
     }
 
     @Override
@@ -55,7 +63,8 @@ public class JwtProviderAdapter implements JwtProviderPort {
             Integer id = Integer.valueOf(claims.getSubject());
             String correo = claims.get(CLAIM_EMAIL, String.class);
             String rol = claims.get(CLAIM_ROLE, String.class);
-            return Optional.of(new TokenClaims(id, correo, rol));
+            Integer restauranteId = claims.get(CLAIM_RESTAURANT_ID, Integer.class);
+            return Optional.of(new TokenClaims(id, correo, rol, restauranteId));
         } catch (Exception e) {
             return Optional.empty();
         }
