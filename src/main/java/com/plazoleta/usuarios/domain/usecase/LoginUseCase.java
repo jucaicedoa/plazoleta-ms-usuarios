@@ -26,7 +26,7 @@ public class LoginUseCase implements AuthServicePort {
     }
 
     @Override
-    public String login(String correo, String clave) {
+    public String login(String correo, String clave, Integer restauranteId) {
         Optional<Usuario> usuarioOpt = usuarioPersistencePort.buscarPorCorreo(correo);
         if (usuarioOpt.isEmpty()) {
             throw new CredencialesInvalidasException(CREDENCIALES_INVALIDAS);
@@ -36,6 +36,6 @@ public class LoginUseCase implements AuthServicePort {
             throw new CredencialesInvalidasException(CREDENCIALES_INVALIDAS);
         }
         String rol = usuario.getRol() != null ? usuario.getRol().getNombre() : "";
-        return jwtProviderPort.generarToken(usuario.getId(), usuario.getCorreo(), rol);
+        return jwtProviderPort.generarToken(usuario.getId(), usuario.getCorreo(), rol, restauranteId);
     }
 }

@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -48,16 +49,16 @@ class LoginUseCaseTest {
 
         when(usuarioPersistencePort.buscarPorCorreo(correo)).thenReturn(Optional.of(usuario));
         when(passwordEncoderPort.matches(clave, usuario.getClave())).thenReturn(true);
-        when(jwtProviderPort.generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO")).thenReturn(tokenEsperado);
+        when(jwtProviderPort.generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO", null)).thenReturn(tokenEsperado);
 
         // Act
-        String token = loginUseCase.login(correo, clave);
+        String token = loginUseCase.login(correo, clave, null);
 
         // Assert
         assertEquals(tokenEsperado, token);
         verify(usuarioPersistencePort).buscarPorCorreo(correo);
         verify(passwordEncoderPort).matches(clave, usuario.getClave());
-        verify(jwtProviderPort).generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO");
+        verify(jwtProviderPort).generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO", null);
     }
 
     @Test
@@ -71,12 +72,12 @@ class LoginUseCaseTest {
         // Act & Assert
         CredencialesInvalidasException exception = assertThrows(
                 CredencialesInvalidasException.class,
-                () -> loginUseCase.login(correo, clave)
+                () -> loginUseCase.login(correo, clave, null)
         );
         assertEquals("Credenciales inválidas", exception.getMessage());
         verify(usuarioPersistencePort).buscarPorCorreo(correo);
         verify(passwordEncoderPort, org.mockito.Mockito.never()).matches(anyString(), anyString());
-        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString());
+        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString(), any());
     }
 
     @Test
@@ -92,12 +93,12 @@ class LoginUseCaseTest {
         // Act & Assert
         CredencialesInvalidasException exception = assertThrows(
                 CredencialesInvalidasException.class,
-                () -> loginUseCase.login(correo, clave)
+                () -> loginUseCase.login(correo, clave, null)
         );
         assertEquals("Credenciales inválidas", exception.getMessage());
         verify(usuarioPersistencePort).buscarPorCorreo(correo);
         verify(passwordEncoderPort).matches(clave, usuario.getClave());
-        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString());
+        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString(), any());
     }
 
     private Usuario crearUsuarioConRol(String correo, String claveEncriptada, String nombreRol) {

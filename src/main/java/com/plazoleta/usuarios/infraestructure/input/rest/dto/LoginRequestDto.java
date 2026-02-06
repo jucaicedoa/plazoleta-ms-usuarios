@@ -13,4 +13,7 @@ public class LoginRequestDto {
 
     @NotBlank(message = "La clave es obligatoria")
     private String clave;
+
+    /** Restaurante con el que trabaja en la sesión (propietario). Opcional; si se envía, se incluye en el token para crear empleados. */
+    private Integer restauranteId;
 }
