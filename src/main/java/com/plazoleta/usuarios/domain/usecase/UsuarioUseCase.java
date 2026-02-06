@@ -37,6 +37,7 @@ public class UsuarioUseCase implements UsuarioServicePort {
                 .fechaNacimiento(datos.getFechaNacimiento())
                 .correo(datos.getCorreo())
                 .clave(claveEncriptada)
+                .restauranteId(null)
                 .build();
 
         Rol rolPropietario = new Rol(null, "PROPIETARIO");
@@ -57,6 +58,7 @@ public class UsuarioUseCase implements UsuarioServicePort {
                 .fechaNacimiento(datos.getFechaNacimiento())
                 .correo(datos.getCorreo())
                 .clave(claveEncriptada)
+                .restauranteId(datos.getRestauranteId())
                 .build();
         // Rol por nombre; en BD se persiste el role_id (adapter resuelve con findByName).
         Rol rolEmpleado = new Rol(null, "EMPLEADO");

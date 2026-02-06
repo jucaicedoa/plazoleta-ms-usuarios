@@ -73,6 +73,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act & Assert
@@ -97,6 +98,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo(correoInvalido)
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act & Assert
@@ -118,6 +120,7 @@ class UsuarioUseCaseTest {
                 .apellido("Pérez")
                 .documento("12345678")
                 .celular(celularInvalido)
+                .restauranteId(null)
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("juan@example.com")
                 .clave("password123")
@@ -145,6 +148,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         when(persistencePort.existeCorreo(anyString())).thenReturn(false);
@@ -169,6 +173,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(17)) // Usuario con 17 años completos (menor de 18)
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         // Act & Assert
@@ -252,6 +257,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("usuario_test-123@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         when(persistencePort.existeCorreo(anyString())).thenReturn(false);
@@ -276,6 +282,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(18))
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(null)
                 .build();
 
         when(persistencePort.existeCorreo(anyString())).thenReturn(false);
@@ -345,7 +352,7 @@ class UsuarioUseCaseTest {
         verify(persistencePort, never()).guardarUsuario(any());
     }
 
-    // Metodo auxiliar para crear datos válidos
+    // Metodo auxiliar para crear datos válidos (restauranteId 1 para empleados)
     private DatosCreacionUsuario crearDatosValidos() {
         return DatosCreacionUsuario.builder()
                 .nombre("Juan")
@@ -355,6 +362,7 @@ class UsuarioUseCaseTest {
                 .fechaNacimiento(LocalDate.now().minusYears(25))
                 .correo("juan@example.com")
                 .clave("password123")
+                .restauranteId(1)
                 .build();
     }
 }
