@@ -88,7 +88,7 @@ class JwtAuthenticationFilterTest {
         String token = "token.jwt.valido";
         String correo = "usuario@mail.com";
         String rol = "PROPIETARIO";
-        TokenClaims claims = new TokenClaims(1, correo, rol);
+        TokenClaims claims = new TokenClaims(1, correo, rol, null);
 
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + token);
         when(jwtProviderPort.validarToken(token)).thenReturn(Optional.of(claims));
@@ -128,7 +128,7 @@ class JwtAuthenticationFilterTest {
         // Arrange
         String token = "token.jwt.valido";
         String correo = "sinrol@mail.com";
-        TokenClaims claims = new TokenClaims(2, correo, null);
+        TokenClaims claims = new TokenClaims(2, correo, null, null);
 
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + token);
         when(jwtProviderPort.validarToken(token)).thenReturn(Optional.of(claims));
@@ -148,7 +148,7 @@ class JwtAuthenticationFilterTest {
     void deberiaExtraerTokenSinEspaciosCuandoHeaderTieneEspaciosTrasBearer() throws ServletException, IOException {
         // Arrange
         String token = "mi.token.jwt";
-        TokenClaims claims = new TokenClaims(1, "a@b.com", "EMPLEADO");
+        TokenClaims claims = new TokenClaims(1, "a@b.com", "EMPLEADO", null);
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + "  " + token);
         when(jwtProviderPort.validarToken(eq(token))).thenReturn(Optional.of(claims));
 
