@@ -1,8 +1,8 @@
 package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 
-import com.plazoleta.usuarios.domain.api.AuthServicePort;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.LoginRequestDto;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.LoginResponseDto;
+import com.plazoleta.usuarios.application.dto.LoginDto;
+import com.plazoleta.usuarios.application.dto.response.LoginResponseDto;
+import com.plazoleta.usuarios.application.handler.IAuthHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Autenticación", description = "API de login")
 public class AuthController {
 
-    private final AuthServicePort authServicePort;
+    private final IAuthHandler authHandler;
 
     @Operation(summary = "Iniciar sesión")
     @ApiResponses(value = {
@@ -29,8 +29,8 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
     })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
-        String token = authServicePort.login(request.getCorreo(), request.getClave(), request.getRestauranteId());
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginDto request) {
+        String token = authHandler.login(request);
         return ResponseEntity.ok(new LoginResponseDto(token));
     }
 }

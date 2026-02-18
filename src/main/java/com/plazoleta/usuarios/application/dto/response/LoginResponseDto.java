@@ -1,4 +1,4 @@
-package com.plazoleta.usuarios.infraestructure.input.rest.dto;
+package com.plazoleta.usuarios.application.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,6 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponseDto {
-
     private String token;
 }

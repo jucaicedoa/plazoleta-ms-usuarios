@@ -19,6 +19,5 @@ public class CrearEmpleadoDto {
     private LocalDate fechaNacimiento;
     private String correo;
     private String clave;
-    /** ID del restaurante del propietario; se asigna desde el token en el controller. */
     private Integer restauranteId;
 }

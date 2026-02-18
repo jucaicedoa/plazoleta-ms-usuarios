@@ -5,10 +5,6 @@ import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.handler.IUsuarioHandler;
 import com.plazoleta.usuarios.domain.model.TokenClaims;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearEmpleadoRequestDto;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.CrearPropietarioRequestDto;
-import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearEmpleadoRestMapper;
-import com.plazoleta.usuarios.infraestructure.input.rest.mapper.CrearPropietarioRestMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -34,8 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsuarioController {
 
     private final IUsuarioHandler usuarioHandler;
-    private final CrearPropietarioRestMapper crearPropietarioRestMapper;
-    private final CrearEmpleadoRestMapper crearEmpleadoRestMapper;
 
     @Operation(summary = "Obtener usuario por ID")
     @ApiResponses(value = {
@@ -60,8 +54,7 @@ public class UsuarioController {
             @ApiResponse(responseCode = "409", description = "Correo ya registrado", content = @Content)
     })
     @PostMapping("/propietario")
-    public ResponseEntity<Void> crearPropietario(@Valid @RequestBody CrearPropietarioRequestDto requestDto) {
-        CrearPropietarioDto dto = crearPropietarioRestMapper.toApplicationDto(requestDto);
+    public ResponseEntity<Void> crearPropietario(@Valid @RequestBody CrearPropietarioDto dto) {
         usuarioHandler.crearPropietario(dto);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
@@ -70,20 +63,18 @@ public class UsuarioController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Empleado creado", content = @Content),
             @ApiResponse(responseCode = "400", description = "Datos inválidos o usuario menor de edad", content = @Content),
-            @ApiResponse(responseCode = "403", description = "Solo un propietario puede crear empleados", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Solo un propietario con restaurante activo puede crear empleados", content = @Content),
             @ApiResponse(responseCode = "409", description = "Correo ya registrado", content = @Content)
     })
     @PostMapping("/empleado")
     public ResponseEntity<Void> crearEmpleado(
             HttpServletRequest request,
-            @Valid @RequestBody CrearEmpleadoRequestDto requestDto) {
+            @Valid @RequestBody CrearEmpleadoDto dto) {
         TokenClaims claims = (TokenClaims) request.getAttribute("tokenClaims");
         if (claims == null || claims.getRestauranteId() == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        CrearEmpleadoDto dto = crearEmpleadoRestMapper.toApplicationDto(requestDto);
-        dto.setRestauranteId(claims.getRestauranteId());
-        usuarioHandler.crearEmpleado(dto);
+        usuarioHandler.crearEmpleado(dto, claims.getRestauranteId());
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 }
