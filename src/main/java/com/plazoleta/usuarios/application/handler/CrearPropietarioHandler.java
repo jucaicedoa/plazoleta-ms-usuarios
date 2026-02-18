@@ -6,7 +6,6 @@ import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 import com.plazoleta.usuarios.application.mapper.UsuarioRequestMapper;
 import com.plazoleta.usuarios.application.mapper.UsuarioResponseMapper;
 import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
-import com.plazoleta.usuarios.domain.model.DatosCreacionUsuario;
 import com.plazoleta.usuarios.domain.model.Usuario;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,14 +20,12 @@ public class CrearPropietarioHandler implements IUsuarioHandler {
 
     @Override
     public void crearPropietario(CrearPropietarioDto dto) {
-        DatosCreacionUsuario datos = mapper.toDatosCreacion(dto);
-        usuarioServicePort.crearPropietario(datos);
+        usuarioServicePort.crearPropietario(mapper.toDatosCreacion(dto));
     }
 
     @Override
-    public void crearEmpleado(CrearEmpleadoDto dto) {
-        DatosCreacionUsuario datos = mapper.toDatosCreacion(dto);
-        usuarioServicePort.crearEmpleado(datos);
+    public void crearEmpleado(CrearEmpleadoDto dto, Integer restauranteId) {
+        usuarioServicePort.crearEmpleado(mapper.toDatosCreacion(dto, restauranteId));
     }
 
     @Override

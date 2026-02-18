@@ -4,10 +4,14 @@ import com.plazoleta.usuarios.application.dto.CrearEmpleadoDto;
 import com.plazoleta.usuarios.application.dto.CrearPropietarioDto;
 import com.plazoleta.usuarios.domain.model.DatosCreacionUsuario;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface UsuarioRequestMapper {
-    @org.mapstruct.Mapping(target = "restauranteId", expression = "java((Integer) null)")
+
+    @Mapping(target = "restauranteId", expression = "java((Integer) null)")
     DatosCreacionUsuario toDatosCreacion(CrearPropietarioDto dto);
-    DatosCreacionUsuario toDatosCreacion(CrearEmpleadoDto dto);
+
+    @Mapping(target = "restauranteId", source = "restauranteId")
+    DatosCreacionUsuario toDatosCreacion(CrearEmpleadoDto dto, Integer restauranteId);
 }

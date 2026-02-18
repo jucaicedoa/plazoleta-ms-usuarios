@@ -7,7 +7,7 @@ import com.plazoleta.usuarios.application.dto.response.UsuarioResponseDto;
 public interface IUsuarioHandler {
 
     void crearPropietario(CrearPropietarioDto dto);
-    void crearEmpleado(CrearEmpleadoDto dto);
+    void crearEmpleado(CrearEmpleadoDto dto, Integer restauranteId);
 
     UsuarioResponseDto obtenerUsuarioPorId(Integer id);
 }
