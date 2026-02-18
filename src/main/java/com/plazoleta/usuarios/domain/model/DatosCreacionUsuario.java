@@ -3,6 +3,7 @@ package com.plazoleta.usuarios.domain.model;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.With;
 
 import java.time.LocalDate;
 
@@ -25,6 +26,7 @@ public class DatosCreacionUsuario {
     private final String celular;
     private final LocalDate fechaNacimiento;
     private final String correo;
+    @With
     private final String clave;
     /** ID del restaurante; obligatorio al crear empleado. */
     private final Integer restauranteId;

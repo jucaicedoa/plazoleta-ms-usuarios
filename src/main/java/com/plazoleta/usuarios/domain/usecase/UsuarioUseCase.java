@@ -26,20 +26,7 @@ public class UsuarioUseCase implements UsuarioServicePort {
     @Override
     public void crearPropietario(DatosCreacionUsuario datos) {
         validar(datos);
-        // Encriptar la clave antes de crear el usuario
-        String claveEncriptada = passwordEncoderPort.encode(datos.getClave());
-        // Crear datos actualizados con clave encriptada
-        DatosCreacionUsuario datosConClaveEncriptada = DatosCreacionUsuario.builder()
-                .nombre(datos.getNombre())
-                .apellido(datos.getApellido())
-                .documento(datos.getDocumento())
-                .celular(datos.getCelular())
-                .fechaNacimiento(datos.getFechaNacimiento())
-                .correo(datos.getCorreo())
-                .clave(claveEncriptada)
-                .restauranteId(null)
-                .build();
-
+        DatosCreacionUsuario datosConClaveEncriptada = datos.withClave(passwordEncoderPort.encode(datos.getClave()));
         Rol rolPropietario = new Rol(null, "PROPIETARIO");
         Usuario usuario = Usuario.crear(datosConClaveEncriptada, rolPropietario);
 
@@ -49,18 +36,7 @@ public class UsuarioUseCase implements UsuarioServicePort {
     @Override
     public void crearEmpleado(DatosCreacionUsuario datos) {
         validar(datos);
-        String claveEncriptada = passwordEncoderPort.encode(datos.getClave());
-        DatosCreacionUsuario datosConClaveEncriptada = DatosCreacionUsuario.builder()
-                .nombre(datos.getNombre())
-                .apellido(datos.getApellido())
-                .documento(datos.getDocumento())
-                .celular(datos.getCelular())
-                .fechaNacimiento(datos.getFechaNacimiento())
-                .correo(datos.getCorreo())
-                .clave(claveEncriptada)
-                .restauranteId(datos.getRestauranteId())
-                .build();
-        // Rol por nombre; en BD se persiste el role_id (adapter resuelve con findByName).
+        DatosCreacionUsuario datosConClaveEncriptada = datos.withClave(passwordEncoderPort.encode(datos.getClave()));
         Rol rolEmpleado = new Rol(null, "EMPLEADO");
         Usuario usuario = Usuario.crear(datosConClaveEncriptada, rolEmpleado);
         persistencePort.guardarUsuario(usuario);
@@ -81,7 +57,8 @@ public class UsuarioUseCase implements UsuarioServicePort {
         if (!datos.getCelular().matches("^\\+?\\d{1,13}$"))
             throw new CampoInvalidoException("Celular inválido");
 
-        if (Period.between(datos.getFechaNacimiento(), LocalDate.now()).getYears() < 18)
+        if (datos.getFechaNacimiento() == null
+                || Period.between(datos.getFechaNacimiento(), LocalDate.now()).getYears() < 18)
             throw new UsuarioMayorDeEdadException();
 
         if (persistencePort.existeCorreo(datos.getCorreo()))
