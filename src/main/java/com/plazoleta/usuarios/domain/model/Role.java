@@ -1,17 +1,13 @@
 package com.plazoleta.usuarios.domain.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TokenClaims {
+public class Role {
     private Integer id;
-    private String email;
-    private String role;
-    private Integer restaurantId;
+    private String name;
 }

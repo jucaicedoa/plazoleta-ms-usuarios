@@ -6,12 +6,9 @@ import java.util.Optional;
 
 public interface JwtProviderPort {
 
-    String generarToken(Integer id, String correo, String rol);
+    String generateToken(Integer id, String email, String role);
 
-    /**
-     * Genera el token incluyendo restauranteId (propietarios que crean empleados).
-     */
-    String generarToken(Integer id, String correo, String rol, Integer restauranteId);
+    String generateToken(Integer id, String email, String role, Integer restaurantId);
 
-    Optional<TokenClaims> validarToken(String token);
+    Optional<TokenClaims> validateToken(String token);
 }

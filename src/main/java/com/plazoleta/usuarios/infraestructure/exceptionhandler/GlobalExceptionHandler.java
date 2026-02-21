@@ -1,14 +1,14 @@
 package com.plazoleta.usuarios.infraestructure.exceptionhandler;
 
-import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
-import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
-import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
-import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
-import com.plazoleta.usuarios.domain.exception.RolNoEncontradoException;
-import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
-import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
+import com.plazoleta.usuarios.domain.exception.InvalidCredentialsException;
+import com.plazoleta.usuarios.domain.exception.InvalidFieldException;
+import com.plazoleta.usuarios.domain.exception.RequiredFieldException;
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.DocumentAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.InvalidEmailException;
+import com.plazoleta.usuarios.domain.exception.RoleNotFoundException;
+import com.plazoleta.usuarios.domain.exception.UserUnderAgeException;
+import com.plazoleta.usuarios.domain.exception.ValueExceedsLengthException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -20,73 +20,71 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Manejador de excepciones que solo trata excepciones específicas del dominio y de validación.
- */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final String KEY_CODIGO = "codigo";
-    private static final String KEY_MENSAJE = "mensaje";
+    private static final String KEY_CODE = "code";
+    private static final String KEY_MESSAGE = "message";
     private static final String KEY_TIMESTAMP = "timestamp";
     private static final String KEY_STATUS = "status";
-    private static final String KEY_CAMPO = "campo";
+    private static final String KEY_FIELD = "field";
+    private static final String KEY_ERRORS = "errors";
 
-    @ExceptionHandler(CampoInvalidoException.class)
-    public ResponseEntity<Map<String, Object>> handleCampoInvalido(CampoInvalidoException ex) {
+    @ExceptionHandler(InvalidFieldException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidField(InvalidFieldException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(createErrorResponse("CAMPO_INVALIDO", ex.getMessage(), HttpStatus.BAD_REQUEST));
+                .body(createErrorResponse("INVALID_FIELD", ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
-    @ExceptionHandler(EmailInvalidoException.class)
-    public ResponseEntity<Map<String, Object>> handleEmailInvalido(EmailInvalidoException ex) {
+    @ExceptionHandler(InvalidEmailException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidEmail(InvalidEmailException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(createErrorResponse("EMAIL_INVALIDO", ex.getMessage(), HttpStatus.BAD_REQUEST));
+                .body(createErrorResponse("INVALID_EMAIL", ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
-    @ExceptionHandler(UsuarioMayorDeEdadException.class)
-    public ResponseEntity<Map<String, Object>> handleUsuarioMayorDeEdad(UsuarioMayorDeEdadException ex) {
+    @ExceptionHandler(UserUnderAgeException.class)
+    public ResponseEntity<Map<String, Object>> handleUserUnderAge(UserUnderAgeException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(createErrorResponse("EDAD_INSUFICIENTE", ex.getMessage(), HttpStatus.BAD_REQUEST));
+                .body(createErrorResponse("INSUFFICIENT_AGE", ex.getMessage(), HttpStatus.BAD_REQUEST));
     }
 
-    @ExceptionHandler(RolNoEncontradoException.class)
-    public ResponseEntity<Map<String, Object>> handleRolNoEncontrado(RolNoEncontradoException ex) {
+    @ExceptionHandler(RoleNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleRoleNotFound(RoleNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(createErrorResponse("ROL_NO_ENCONTRADO", ex.getMessage(), HttpStatus.NOT_FOUND));
+                .body(createErrorResponse("ROLE_NOT_FOUND", ex.getMessage(), HttpStatus.NOT_FOUND));
     }
 
-    @ExceptionHandler(CorreoYaRegistradoException.class)
-    public ResponseEntity<Map<String, Object>> handleCorreoYaRegistrado(CorreoYaRegistradoException ex) {
-        Map<String, Object> response = createErrorResponse("CORREO_YA_REGISTRADO", ex.getMessage(), HttpStatus.CONFLICT);
-        response.put(KEY_CAMPO, "correo");
+    @ExceptionHandler(EmailAlreadyRegisteredException.class)
+    public ResponseEntity<Map<String, Object>> handleEmailAlreadyRegistered(EmailAlreadyRegisteredException ex) {
+        Map<String, Object> response = createErrorResponse("EMAIL_ALREADY_REGISTERED", ex.getMessage(), HttpStatus.CONFLICT);
+        response.put(KEY_FIELD, "email");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-    @ExceptionHandler(DocumentoYaRegistradoException.class)
-    public ResponseEntity<Map<String, Object>> handleDocumentoYaRegistrado(DocumentoYaRegistradoException ex) {
-        Map<String, Object> response = createErrorResponse("DOCUMENTO_YA_REGISTRADO", ex.getMessage(), HttpStatus.CONFLICT);
-        response.put(KEY_CAMPO, "documento");
+    @ExceptionHandler(DocumentAlreadyRegisteredException.class)
+    public ResponseEntity<Map<String, Object>> handleDocumentAlreadyRegistered(DocumentAlreadyRegisteredException ex) {
+        Map<String, Object> response = createErrorResponse("DOCUMENT_ALREADY_REGISTERED", ex.getMessage(), HttpStatus.CONFLICT);
+        response.put(KEY_FIELD, "documentNumber");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-    @ExceptionHandler(ValorExcedeLongitudException.class)
-    public ResponseEntity<Map<String, Object>> handleValorExcedeLongitud(ValorExcedeLongitudException ex) {
-        Map<String, Object> response = createErrorResponse("VALOR_EXCEDE_LONGITUD", ex.getMessage(), HttpStatus.BAD_REQUEST);
-        response.put(KEY_CAMPO, ex.getCampo());
+    @ExceptionHandler(ValueExceedsLengthException.class)
+    public ResponseEntity<Map<String, Object>> handleValueExceedsLength(ValueExceedsLengthException ex) {
+        Map<String, Object> response = createErrorResponse("VALUE_EXCEEDS_LENGTH", ex.getMessage(), HttpStatus.BAD_REQUEST);
+        response.put(KEY_FIELD, ex.getField());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler(CredencialesInvalidasException.class)
-    public ResponseEntity<Map<String, Object>> handleCredencialesInvalidas(CredencialesInvalidasException ex) {
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidCredentials(InvalidCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(createErrorResponse("CREDENCIALES_INVALIDAS", ex.getMessage(), HttpStatus.UNAUTHORIZED));
+                .body(createErrorResponse("INVALID_CREDENTIALS", ex.getMessage(), HttpStatus.UNAUTHORIZED));
     }
 
-    @ExceptionHandler(CampoObligatorioException.class)
-    public ResponseEntity<Map<String, Object>> handleCampoObligatorio(CampoObligatorioException ex) {
-        Map<String, Object> response = createErrorResponse("CAMPO_OBLIGATORIO", ex.getMessage(), HttpStatus.BAD_REQUEST);
-        response.put(KEY_CAMPO, "desconocido");
+    @ExceptionHandler(RequiredFieldException.class)
+    public ResponseEntity<Map<String, Object>> handleRequiredField(RequiredFieldException ex) {
+        Map<String, Object> response = createErrorResponse("REQUIRED_FIELD", ex.getMessage(), HttpStatus.BAD_REQUEST);
+        response.put(KEY_FIELD, "unknown");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
@@ -100,19 +98,19 @@ public class GlobalExceptionHandler {
         });
 
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put(KEY_CODIGO, "VALIDACION_FALLIDA");
-        response.put(KEY_MENSAJE, "Los datos enviados no cumplen con las validaciones requeridas");
-        response.put("errores", errors);
+        response.put(KEY_CODE, "VALIDATION_FAILED");
+        response.put(KEY_MESSAGE, "Submitted data does not meet required validations");
+        response.put(KEY_ERRORS, errors);
         response.put(KEY_TIMESTAMP, LocalDateTime.now().toString());
         response.put(KEY_STATUS, HttpStatus.BAD_REQUEST.value());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    private Map<String, Object> createErrorResponse(String codigo, String mensaje, HttpStatus status) {
+    private Map<String, Object> createErrorResponse(String code, String message, HttpStatus status) {
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put(KEY_CODIGO, codigo);
-        response.put(KEY_MENSAJE, mensaje);
+        response.put(KEY_CODE, code);
+        response.put(KEY_MESSAGE, message);
         response.put(KEY_TIMESTAMP, LocalDateTime.now().toString());
         response.put(KEY_STATUS, status.value());
         return response;

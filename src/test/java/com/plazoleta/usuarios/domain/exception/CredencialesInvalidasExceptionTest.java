@@ -4,13 +4,13 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class CredencialesInvalidasExceptionTest {
+class InvalidCredentialsExceptionTest {
 
     @Test
     void deberiaCrearExcepcionConMensaje() {
         String mensaje = "Credenciales inválidas";
 
-        CredencialesInvalidasException exception = new CredencialesInvalidasException(mensaje);
+        InvalidCredentialsException exception = new InvalidCredentialsException(mensaje);
 
         assertNotNull(exception);
         assertEquals(mensaje, exception.getMessage());

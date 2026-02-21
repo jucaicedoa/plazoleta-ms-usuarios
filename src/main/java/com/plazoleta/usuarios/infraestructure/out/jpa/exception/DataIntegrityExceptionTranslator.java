@@ -1,83 +1,80 @@
 package com.plazoleta.usuarios.infraestructure.out.jpa.exception;
 
-import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
-import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
+import com.plazoleta.usuarios.domain.exception.RequiredFieldException;
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.DocumentAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.ValueExceedsLengthException;
 import org.springframework.dao.DataIntegrityViolationException;
 
-/**
- * Excepciones de integridad de base de datos (Spring) a excepciones del dominio.
- */
 public final class DataIntegrityExceptionTranslator {
 
     private DataIntegrityExceptionTranslator() {
     }
 
     public static void throwSpecific(DataIntegrityViolationException ex) {
-        String mensaje = ex.getMessage();
-        if (mensaje == null) {
-            throw new CampoObligatorioException("Error al guardar los datos en la base de datos");
+        String message = ex.getMessage();
+        if (message == null) {
+            throw new RequiredFieldException("Error saving data to database");
         }
 
-        if (isUniqueConstraintViolation(mensaje)) {
-            throwUniqueConstraint(mensaje);
-        } else if (isValueTooLongError(mensaje)) {
-            throwValueTooLong(mensaje);
-        } else if (isNotNullViolation(mensaje)) {
-            throw new CampoObligatorioException();
+        if (isUniqueConstraintViolation(message)) {
+            throwUniqueConstraint(message);
+        } else if (isValueTooLongError(message)) {
+            throwValueTooLong(message);
+        } else if (isNotNullViolation(message)) {
+            throw new RequiredFieldException();
         }
 
-        throw new CampoObligatorioException("Error al guardar los datos en la base de datos");
+        throw new RequiredFieldException("Error saving data to database");
     }
 
-    private static boolean isUniqueConstraintViolation(String mensaje) {
-        return mensaje.contains("unique constraint") || mensaje.contains("duplicate key");
+    private static boolean isUniqueConstraintViolation(String message) {
+        return message.contains("unique constraint") || message.contains("duplicate key");
     }
 
-    private static boolean isValueTooLongError(String mensaje) {
-        return mensaje.contains("demasiado largo") || mensaje.contains("value too long");
+    private static boolean isValueTooLongError(String message) {
+        return message.contains("value too long") || message.contains("demasiado largo");
     }
 
-    private static boolean isNotNullViolation(String mensaje) {
-        return mensaje.contains("not-null") || mensaje.contains("null value");
+    private static boolean isNotNullViolation(String message) {
+        return message.contains("not-null") || message.contains("null value");
     }
 
-    private static void throwUniqueConstraint(String mensaje) {
-        if (mensaje.contains("email")) {
-            throw new CorreoYaRegistradoException();
+    private static void throwUniqueConstraint(String message) {
+        if (message.contains("email")) {
+            throw new EmailAlreadyRegisteredException();
         }
-        if (mensaje.contains("document")) {
-            throw new DocumentoYaRegistradoException();
+        if (message.contains("document")) {
+            throw new DocumentAlreadyRegisteredException();
         }
-        throw new CorreoYaRegistradoException("Ya existe un registro con estos datos");
+        throw new EmailAlreadyRegisteredException("A record with this data already exists");
     }
 
-    private static void throwValueTooLong(String mensaje) {
-        if (mensaje.contains("phone") || mensaje.contains("varying(13)")) {
-            throw new ValorExcedeLongitudException(
-                    "El número de celular no puede tener más de 13 caracteres", "celular");
+    private static void throwValueTooLong(String message) {
+        if (message.contains("phone") || message.contains("varying(13)")) {
+            throw new ValueExceedsLengthException(
+                    "Phone number cannot exceed 13 characters", "phone");
         }
-        if (mensaje.contains("document_number")) {
-            throw new ValorExcedeLongitudException(
-                    "El número de documento excede la longitud máxima permitida", "documento");
+        if (message.contains("document_number")) {
+            throw new ValueExceedsLengthException(
+                    "Document number exceeds maximum allowed length", "documentNumber");
         }
-        if (mensaje.contains("email")) {
-            throw new ValorExcedeLongitudException(
-                    "El correo electrónico excede la longitud máxima permitida", "correo");
+        if (message.contains("email")) {
+            throw new ValueExceedsLengthException(
+                    "Email exceeds maximum allowed length", "email");
         }
-        if (mensaje.contains("first_name")) {
-            throw new ValorExcedeLongitudException(
-                    "El nombre excede la longitud máxima permitida", "nombre");
+        if (message.contains("first_name")) {
+            throw new ValueExceedsLengthException(
+                    "First name exceeds maximum allowed length", "firstName");
         }
-        if (mensaje.contains("last_name")) {
-            throw new ValorExcedeLongitudException(
-                    "El apellido excede la longitud máxima permitida", "apellido");
+        if (message.contains("last_name")) {
+            throw new ValueExceedsLengthException(
+                    "Last name exceeds maximum allowed length", "lastName");
         }
-        if (mensaje.contains("password")) {
-            throw new ValorExcedeLongitudException(
-                    "La contraseña excede la longitud máxima permitida", "clave");
+        if (message.contains("password")) {
+            throw new ValueExceedsLengthException(
+                    "Password exceeds maximum allowed length", "password");
         }
-        throw new ValorExcedeLongitudException("El valor excede la longitud máxima permitida", "desconocido");
+        throw new ValueExceedsLengthException("Value exceeds maximum allowed length", "unknown");
     }
 }

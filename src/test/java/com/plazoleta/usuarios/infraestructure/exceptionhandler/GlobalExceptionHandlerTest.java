@@ -1,14 +1,14 @@
 package com.plazoleta.usuarios.infraestructure.exceptionhandler;
 
-import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
-import com.plazoleta.usuarios.domain.exception.CampoInvalidoException;
-import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
-import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.EmailInvalidoException;
-import com.plazoleta.usuarios.domain.exception.RolNoEncontradoException;
-import com.plazoleta.usuarios.domain.exception.UsuarioMayorDeEdadException;
-import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
+import com.plazoleta.usuarios.domain.exception.InvalidCredentialsException;
+import com.plazoleta.usuarios.domain.exception.InvalidFieldException;
+import com.plazoleta.usuarios.domain.exception.RequiredFieldException;
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.DocumentAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.InvalidEmailException;
+import com.plazoleta.usuarios.domain.exception.RoleNotFoundException;
+import com.plazoleta.usuarios.domain.exception.UserUnderAgeException;
+import com.plazoleta.usuarios.domain.exception.ValueExceedsLengthException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -34,240 +34,219 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    void deberiaManejarCredencialesInvalidasException() {
-        // Arrange
-        CredencialesInvalidasException exception = new CredencialesInvalidasException("Credenciales inválidas");
+    void shouldHandleInvalidCredentialsException() {
+        InvalidCredentialsException exception = new InvalidCredentialsException("Invalid credentials");
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCredencialesInvalidas(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleInvalidCredentials(exception);
 
-        // Assert
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CREDENCIALES_INVALIDAS", response.getBody().get("codigo"));
-        assertEquals("Credenciales inválidas", response.getBody().get("mensaje"));
+        assertEquals("INVALID_CREDENTIALS", response.getBody().get("code"));
+        assertEquals("Invalid credentials", response.getBody().get("message"));
         assertEquals(401, response.getBody().get("status"));
         assertNotNull(response.getBody().get("timestamp"));
     }
 
     @Test
-    void deberiaManejaCampoInvalidoException() {
-        // Arrange
-        CampoInvalidoException exception = new CampoInvalidoException("Documento inválido");
+    void shouldHandleInvalidFieldException() {
+        InvalidFieldException exception = new InvalidFieldException("Invalid document");
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoInvalido(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleInvalidField(exception);
 
-        // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CAMPO_INVALIDO", response.getBody().get("codigo"));
-        assertEquals("Documento inválido", response.getBody().get("mensaje"));
+        assertEquals("INVALID_FIELD", response.getBody().get("code"));
+        assertEquals("Invalid document", response.getBody().get("message"));
         assertEquals(400, response.getBody().get("status"));
         assertNotNull(response.getBody().get("timestamp"));
     }
 
     @Test
-    void deberiaManejarEmailInvalidoException() {
-        // Arrange
-        EmailInvalidoException exception = new EmailInvalidoException();
+    void shouldHandleInvalidEmailException() {
+        InvalidEmailException exception = new InvalidEmailException();
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleEmailInvalido(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleInvalidEmail(exception);
 
-        // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("EMAIL_INVALIDO", response.getBody().get("codigo"));
-        assertEquals("El correo electrónico no tiene un formato válido", response.getBody().get("mensaje"));
+        assertEquals("INVALID_EMAIL", response.getBody().get("code"));
+        assertEquals("Email format is invalid", response.getBody().get("message"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarUsuarioMayorDeEdadException() {
-        // Arrange
-        UsuarioMayorDeEdadException exception = new UsuarioMayorDeEdadException();
+    void shouldHandleUserUnderAgeException() {
+        UserUnderAgeException exception = new UserUnderAgeException();
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleUsuarioMayorDeEdad(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleUserUnderAge(exception);
 
-        // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("EDAD_INSUFICIENTE", response.getBody().get("codigo"));
-        assertTrue(response.getBody().get("mensaje").toString().contains("mayor"));
+        assertEquals("INSUFFICIENT_AGE", response.getBody().get("code"));
+        assertTrue(response.getBody().get("message").toString().contains("18"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarRolNoEncontradoException() {
-        // Arrange
-        RolNoEncontradoException exception = new RolNoEncontradoException("Rol PROPIETARIO no encontrado en la base de datos");
+    void shouldHandleRoleNotFoundException() {
+        RoleNotFoundException exception = new RoleNotFoundException("Role PROPIETARIO not found in database");
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRolNoEncontrado(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRoleNotFound(exception);
 
-        // Assert
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("ROL_NO_ENCONTRADO", response.getBody().get("codigo"));
-        assertEquals("Rol PROPIETARIO no encontrado en la base de datos", response.getBody().get("mensaje"));
+        assertEquals("ROLE_NOT_FOUND", response.getBody().get("code"));
+        assertEquals("Role PROPIETARIO not found in database", response.getBody().get("message"));
         assertEquals(404, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarMethodArgumentNotValidException() {
-        // Arrange
+    void shouldHandleMethodArgumentNotValidException() {
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         BindingResult bindingResult = mock(BindingResult.class);
-        FieldError fieldError1 = new FieldError("objeto", "nombre", "El nombre es obligatorio");
-        FieldError fieldError2 = new FieldError("objeto", "correo", "El correo es inválido");
+        FieldError fieldError1 = new FieldError("obj", "firstName", "First name is required");
+        FieldError fieldError2 = new FieldError("obj", "email", "Invalid email");
 
         when(exception.getBindingResult()).thenReturn(bindingResult);
         when(bindingResult.getAllErrors()).thenReturn(List.of(fieldError1, fieldError2));
 
-        // Act
         ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValidationExceptions(exception);
 
-        // Assert
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("VALIDACION_FALLIDA", response.getBody().get("codigo"));
-        assertEquals("Los datos enviados no cumplen con las validaciones requeridas", response.getBody().get("mensaje"));
+        assertEquals("VALIDATION_FAILED", response.getBody().get("code"));
+        assertEquals("Submitted data does not meet required validations", response.getBody().get("message"));
 
         @SuppressWarnings("unchecked")
-        Map<String, String> errores = (Map<String, String>) response.getBody().get("errores");
-        assertEquals(2, errores.size());
-        assertEquals("El nombre es obligatorio", errores.get("nombre"));
-        assertEquals("El correo es inválido", errores.get("correo"));
+        Map<String, String> errors = (Map<String, String>) response.getBody().get("errors");
+        assertEquals(2, errors.size());
+        assertEquals("First name is required", errors.get("firstName"));
+        assertEquals("Invalid email", errors.get("email"));
     }
 
     @Test
-    void deberiaManejarCorreoYaRegistradoException() {
-        CorreoYaRegistradoException exception = new CorreoYaRegistradoException();
+    void shouldHandleEmailAlreadyRegisteredException() {
+        EmailAlreadyRegisteredException exception = new EmailAlreadyRegisteredException();
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCorreoYaRegistrado(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleEmailAlreadyRegistered(exception);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CORREO_YA_REGISTRADO", response.getBody().get("codigo"));
-        assertEquals("Ya existe un usuario con este correo electrónico", response.getBody().get("mensaje"));
-        assertEquals("correo", response.getBody().get("campo"));
+        assertEquals("EMAIL_ALREADY_REGISTERED", response.getBody().get("code"));
+        assertEquals("A user with this email already exists", response.getBody().get("message"));
+        assertEquals("email", response.getBody().get("field"));
         assertEquals(409, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarCorreoYaRegistradoExceptionConMensajePersonalizado() {
-        String mensajePersonalizado = "Ya existe un registro con estos datos";
-        CorreoYaRegistradoException exception = new CorreoYaRegistradoException(mensajePersonalizado);
+    void shouldHandleEmailAlreadyRegisteredExceptionWithCustomMessage() {
+        String customMessage = "A record with this data already exists";
+        EmailAlreadyRegisteredException exception = new EmailAlreadyRegisteredException(customMessage);
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCorreoYaRegistrado(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleEmailAlreadyRegistered(exception);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CORREO_YA_REGISTRADO", response.getBody().get("codigo"));
-        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
-        assertEquals("correo", response.getBody().get("campo"));
+        assertEquals("EMAIL_ALREADY_REGISTERED", response.getBody().get("code"));
+        assertEquals(customMessage, response.getBody().get("message"));
+        assertEquals("email", response.getBody().get("field"));
         assertEquals(409, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarDocumentoYaRegistradoException() {
-        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException();
+    void shouldHandleDocumentAlreadyRegisteredException() {
+        DocumentAlreadyRegisteredException exception = new DocumentAlreadyRegisteredException();
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentoYaRegistrado(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentAlreadyRegistered(exception);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("DOCUMENTO_YA_REGISTRADO", response.getBody().get("codigo"));
-        assertEquals("Ya existe un usuario con este número de documento", response.getBody().get("mensaje"));
-        assertEquals("documento", response.getBody().get("campo"));
+        assertEquals("DOCUMENT_ALREADY_REGISTERED", response.getBody().get("code"));
+        assertEquals("A user with this document number already exists", response.getBody().get("message"));
+        assertEquals("documentNumber", response.getBody().get("field"));
         assertEquals(409, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarDocumentoYaRegistradoExceptionConMensajePersonalizado() {
-        String mensajePersonalizado = "El documento ya está registrado en el sistema";
-        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException(mensajePersonalizado);
+    void shouldHandleDocumentAlreadyRegisteredExceptionWithCustomMessage() {
+        String customMessage = "Document already registered in system";
+        DocumentAlreadyRegisteredException exception = new DocumentAlreadyRegisteredException(customMessage);
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentoYaRegistrado(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleDocumentAlreadyRegistered(exception);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("DOCUMENTO_YA_REGISTRADO", response.getBody().get("codigo"));
-        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
-        assertEquals("documento", response.getBody().get("campo"));
+        assertEquals("DOCUMENT_ALREADY_REGISTERED", response.getBody().get("code"));
+        assertEquals(customMessage, response.getBody().get("message"));
+        assertEquals("documentNumber", response.getBody().get("field"));
         assertEquals(409, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarValorExcedeLongitudException() {
-        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(
-                "El número de celular no puede tener más de 13 caracteres", "celular");
+    void shouldHandleValueExceedsLengthException() {
+        ValueExceedsLengthException exception = new ValueExceedsLengthException(
+                "Phone number cannot exceed 13 characters", "phone");
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValorExcedeLongitud(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValueExceedsLength(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("VALOR_EXCEDE_LONGITUD", response.getBody().get("codigo"));
-        assertEquals("El número de celular no puede tener más de 13 caracteres", response.getBody().get("mensaje"));
-        assertEquals("celular", response.getBody().get("campo"));
+        assertEquals("VALUE_EXCEEDS_LENGTH", response.getBody().get("code"));
+        assertEquals("Phone number cannot exceed 13 characters", response.getBody().get("message"));
+        assertEquals("phone", response.getBody().get("field"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarValorExcedeLongitudExceptionConCampoNull() {
-        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(
-                "El valor excede la longitud máxima permitida", null);
+    void shouldHandleValueExceedsLengthExceptionWithNullField() {
+        ValueExceedsLengthException exception = new ValueExceedsLengthException(
+                "Value exceeds maximum allowed length", null);
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValorExcedeLongitud(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleValueExceedsLength(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("VALOR_EXCEDE_LONGITUD", response.getBody().get("codigo"));
-        assertEquals("El valor excede la longitud máxima permitida", response.getBody().get("mensaje"));
-        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals("VALUE_EXCEEDS_LENGTH", response.getBody().get("code"));
+        assertEquals("Value exceeds maximum allowed length", response.getBody().get("message"));
+        assertEquals("unknown", response.getBody().get("field"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarCampoObligatorioException() {
-        CampoObligatorioException exception = new CampoObligatorioException();
+    void shouldHandleRequiredFieldException() {
+        RequiredFieldException exception = new RequiredFieldException();
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoObligatorio(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRequiredField(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CAMPO_OBLIGATORIO", response.getBody().get("codigo"));
-        assertEquals("Falta un campo obligatorio", response.getBody().get("mensaje"));
-        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals("REQUIRED_FIELD", response.getBody().get("code"));
+        assertEquals("Required field is missing", response.getBody().get("message"));
+        assertEquals("unknown", response.getBody().get("field"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaManejarCampoObligatorioExceptionConMensajePersonalizado() {
-        String mensajePersonalizado = "Error al guardar los datos en la base de datos";
-        CampoObligatorioException exception = new CampoObligatorioException(mensajePersonalizado);
+    void shouldHandleRequiredFieldExceptionWithCustomMessage() {
+        String customMessage = "Error saving data to database";
+        RequiredFieldException exception = new RequiredFieldException(customMessage);
 
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoObligatorio(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleRequiredField(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals("CAMPO_OBLIGATORIO", response.getBody().get("codigo"));
-        assertEquals(mensajePersonalizado, response.getBody().get("mensaje"));
-        assertEquals("desconocido", response.getBody().get("campo"));
+        assertEquals("REQUIRED_FIELD", response.getBody().get("code"));
+        assertEquals(customMessage, response.getBody().get("message"));
+        assertEquals("unknown", response.getBody().get("field"));
         assertEquals(400, response.getBody().get("status"));
     }
 
     @Test
-    void deberiaIncluirTimestampEnTodasLasRespuestas() {
-        // Arrange
-        CampoInvalidoException exception = new CampoInvalidoException("Test");
+    void shouldIncludeTimestampInAllResponses() {
+        InvalidFieldException exception = new InvalidFieldException("Test");
 
-        // Act
-        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleCampoInvalido(exception);
+        ResponseEntity<Map<String, Object>> response = exceptionHandler.handleInvalidField(exception);
 
-        // Assert
         assertNotNull(response.getBody());
         assertNotNull(response.getBody().get("timestamp"));
         assertTrue(response.getBody().get("timestamp") instanceof String);

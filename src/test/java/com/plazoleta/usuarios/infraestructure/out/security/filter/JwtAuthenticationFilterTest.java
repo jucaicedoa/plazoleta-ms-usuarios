@@ -63,7 +63,7 @@ class JwtAuthenticationFilterTest {
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(jwtProviderPort, never()).validarToken(anyString());
+        verify(jwtProviderPort, never()).validateToken(anyString());
         verify(filterChain).doFilter(request, response);
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
@@ -77,7 +77,7 @@ class JwtAuthenticationFilterTest {
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(jwtProviderPort, never()).validarToken(anyString());
+        verify(jwtProviderPort, never()).validateToken(anyString());
         verify(filterChain).doFilter(request, response);
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
@@ -91,13 +91,13 @@ class JwtAuthenticationFilterTest {
         TokenClaims claims = new TokenClaims(1, correo, rol, null);
 
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + token);
-        when(jwtProviderPort.validarToken(token)).thenReturn(Optional.of(claims));
+        when(jwtProviderPort.validateToken(token)).thenReturn(Optional.of(claims));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(jwtProviderPort).validarToken(token);
+        verify(jwtProviderPort).validateToken(token);
         verify(filterChain).doFilter(request, response);
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -112,13 +112,13 @@ class JwtAuthenticationFilterTest {
         // Arrange
         String token = "token.invalido";
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + token);
-        when(jwtProviderPort.validarToken(token)).thenReturn(Optional.empty());
+        when(jwtProviderPort.validateToken(token)).thenReturn(Optional.empty());
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(jwtProviderPort).validarToken(token);
+        verify(jwtProviderPort).validateToken(token);
         verify(filterChain).doFilter(request, response);
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
@@ -131,7 +131,7 @@ class JwtAuthenticationFilterTest {
         TokenClaims claims = new TokenClaims(2, correo, null, null);
 
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + token);
-        when(jwtProviderPort.validarToken(token)).thenReturn(Optional.of(claims));
+        when(jwtProviderPort.validateToken(token)).thenReturn(Optional.of(claims));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -150,14 +150,14 @@ class JwtAuthenticationFilterTest {
         String token = "mi.token.jwt";
         TokenClaims claims = new TokenClaims(1, "a@b.com", "EMPLEADO", null);
         when(request.getHeader("Authorization")).thenReturn(BEARER_PREFIX + "  " + token);
-        when(jwtProviderPort.validarToken(eq(token))).thenReturn(Optional.of(claims));
+        when(jwtProviderPort.validateToken(eq(token))).thenReturn(Optional.of(claims));
 
         // Act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
 
         // Assert - el filter hace substring(BEARER_PREFIX.length()).trim(), así que pasa "  " + token
         ArgumentCaptor<String> tokenCaptor = ArgumentCaptor.forClass(String.class);
-        verify(jwtProviderPort).validarToken(tokenCaptor.capture());
+        verify(jwtProviderPort).validateToken(tokenCaptor.capture());
         assertEquals(token, tokenCaptor.getValue().trim());
         verify(filterChain).doFilter(request, response);
     }
