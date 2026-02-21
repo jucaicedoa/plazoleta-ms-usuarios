@@ -1,12 +1,12 @@
 package com.plazoleta.usuarios.infraestructure.configuration;
 
-import com.plazoleta.usuarios.domain.api.UsuarioServicePort;
+import com.plazoleta.usuarios.domain.api.UserServicePort;
 import com.plazoleta.usuarios.domain.spi.JwtProviderPort;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
-import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
-import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UsuarioEntityMapper;
+import com.plazoleta.usuarios.domain.spi.UserPersistencePort;
+import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UserEntityMapper;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
-import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UsuarioRepository;
+import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +20,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class BeanConfigurationTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UserRepository userRepository;
 
     @Mock
     private RoleRepository roleRepository;
 
     @Mock
-    private UsuarioEntityMapper usuarioEntityMapper;
+    private UserEntityMapper userEntityMapper;
 
     @Mock
     private JwtProviderPort jwtProviderPort;
@@ -35,7 +35,7 @@ class BeanConfigurationTest {
 
     @BeforeEach
     void setUp() {
-        beanConfiguration = new BeanConfiguration(usuarioRepository, roleRepository, usuarioEntityMapper, jwtProviderPort);
+        beanConfiguration = new BeanConfiguration(userRepository, roleRepository, userEntityMapper, jwtProviderPort);
     }
 
     @Test
@@ -54,22 +54,18 @@ class BeanConfigurationTest {
     }
 
     @Test
-    void deberiaCrearUsuarioServicePortBean() {
-        // Act
-        UsuarioServicePort usuarioServicePort = beanConfiguration.usuarioServicePort();
+    void shouldCreateUserServicePortBean() {
+        UserServicePort userServicePort = beanConfiguration.userServicePort();
 
-        // Assert
-        assertNotNull(usuarioServicePort);
-        assertTrue(usuarioServicePort instanceof UsuarioServicePort);
+        assertNotNull(userServicePort);
+        assertTrue(userServicePort instanceof UserServicePort);
     }
 
     @Test
-    void deberiaCrearUsuarioPersistencePortBean() {
-        // Act
-        UsuarioPersistencePort usuarioPersistencePort = beanConfiguration.usuarioPersistencePort();
+    void shouldCreateUserPersistencePortBean() {
+        UserPersistencePort userPersistencePort = beanConfiguration.userPersistencePort();
 
-        // Assert
-        assertNotNull(usuarioPersistencePort);
+        assertNotNull(userPersistencePort);
     }
 
     @Test
@@ -87,12 +83,9 @@ class BeanConfigurationTest {
     }
 
     @Test
-    void deberiaInyectarDependenciasCorrectamente() {
-        // Act
-        UsuarioServicePort servicePort = beanConfiguration.usuarioServicePort();
+    void shouldInjectDependenciesCorrectly() {
+        UserServicePort servicePort = beanConfiguration.userServicePort();
 
-        // Assert
         assertNotNull(servicePort);
-        // El bean debe estar correctamente configurado con las dependencias
     }
 }

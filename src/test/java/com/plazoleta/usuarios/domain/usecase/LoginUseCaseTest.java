@@ -1,11 +1,11 @@
 package com.plazoleta.usuarios.domain.usecase;
 
-import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
-import com.plazoleta.usuarios.domain.model.Rol;
-import com.plazoleta.usuarios.domain.model.Usuario;
+import com.plazoleta.usuarios.domain.exception.InvalidCredentialsException;
+import com.plazoleta.usuarios.domain.model.Role;
+import com.plazoleta.usuarios.domain.model.User;
 import com.plazoleta.usuarios.domain.spi.JwtProviderPort;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
-import com.plazoleta.usuarios.domain.spi.UsuarioPersistencePort;
+import com.plazoleta.usuarios.domain.spi.UserPersistencePort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 class LoginUseCaseTest {
 
     @Mock
-    private UsuarioPersistencePort usuarioPersistencePort;
+    private UserPersistencePort userPersistencePort;
 
     @Mock
     private PasswordEncoderPort passwordEncoderPort;
@@ -36,77 +36,70 @@ class LoginUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        loginUseCase = new LoginUseCase(usuarioPersistencePort, passwordEncoderPort, jwtProviderPort);
+        loginUseCase = new LoginUseCase(userPersistencePort, passwordEncoderPort, jwtProviderPort);
     }
 
     @Test
-    void deberiaRetornarTokenCuandoCredencialesSonCorrectas() {
-        // Arrange
-        String correo = "usuario@mail.com";
-        String clave = "clave123";
-        Usuario usuario = crearUsuarioConRol(correo, "claveEncriptada", "PROPIETARIO");
-        String tokenEsperado = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+    void shouldReturnTokenWhenCredentialsAreCorrect() {
+        String email = "usuario@mail.com";
+        String password = "clave123";
+        User user = createUserWithRole(email, "encodedPassword", "PROPIETARIO");
+        String expectedToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
 
-        when(usuarioPersistencePort.buscarPorCorreo(correo)).thenReturn(Optional.of(usuario));
-        when(passwordEncoderPort.matches(clave, usuario.getClave())).thenReturn(true);
-        when(jwtProviderPort.generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO", null)).thenReturn(tokenEsperado);
+        when(userPersistencePort.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordEncoderPort.matches(password, user.getPassword())).thenReturn(true);
+        when(jwtProviderPort.generateToken(user.getId(), user.getEmail(), "PROPIETARIO", null)).thenReturn(expectedToken);
 
-        // Act
-        String token = loginUseCase.login(correo, clave, null);
+        String token = loginUseCase.login(email, password, null);
 
-        // Assert
-        assertEquals(tokenEsperado, token);
-        verify(usuarioPersistencePort).buscarPorCorreo(correo);
-        verify(passwordEncoderPort).matches(clave, usuario.getClave());
-        verify(jwtProviderPort).generarToken(usuario.getId(), usuario.getCorreo(), "PROPIETARIO", null);
+        assertEquals(expectedToken, token);
+        verify(userPersistencePort).findByEmail(email);
+        verify(passwordEncoderPort).matches(password, user.getPassword());
+        verify(jwtProviderPort).generateToken(user.getId(), user.getEmail(), "PROPIETARIO", null);
     }
 
     @Test
-    void deberiaLanzarCredencialesInvalidasCuandoUsuarioNoExiste() {
-        // Arrange
-        String correo = "noexiste@mail.com";
-        String clave = "clave123";
+    void shouldThrowInvalidCredentialsWhenUserDoesNotExist() {
+        String email = "noexiste@mail.com";
+        String password = "clave123";
 
-        when(usuarioPersistencePort.buscarPorCorreo(correo)).thenReturn(Optional.empty());
+        when(userPersistencePort.findByEmail(email)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        CredencialesInvalidasException exception = assertThrows(
-                CredencialesInvalidasException.class,
-                () -> loginUseCase.login(correo, clave, null)
+        InvalidCredentialsException exception = assertThrows(
+                InvalidCredentialsException.class,
+                () -> loginUseCase.login(email, password, null)
         );
-        assertEquals("Credenciales inválidas", exception.getMessage());
-        verify(usuarioPersistencePort).buscarPorCorreo(correo);
+        assertEquals("Invalid credentials", exception.getMessage());
+        verify(userPersistencePort).findByEmail(email);
         verify(passwordEncoderPort, org.mockito.Mockito.never()).matches(anyString(), anyString());
-        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString(), any());
+        verify(jwtProviderPort, org.mockito.Mockito.never()).generateToken(anyInt(), anyString(), anyString(), any());
     }
 
     @Test
-    void deberiaLanzarCredencialesInvalidasCuandoClaveEsIncorrecta() {
-        // Arrange
-        String correo = "usuario@mail.com";
-        String clave = "claveIncorrecta";
-        Usuario usuario = crearUsuarioConRol(correo, "claveEncriptada", "PROPIETARIO");
+    void shouldThrowInvalidCredentialsWhenPasswordIsWrong() {
+        String email = "usuario@mail.com";
+        String password = "wrongPassword";
+        User user = createUserWithRole(email, "encodedPassword", "PROPIETARIO");
 
-        when(usuarioPersistencePort.buscarPorCorreo(correo)).thenReturn(Optional.of(usuario));
-        when(passwordEncoderPort.matches(clave, usuario.getClave())).thenReturn(false);
+        when(userPersistencePort.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordEncoderPort.matches(password, user.getPassword())).thenReturn(false);
 
-        // Act & Assert
-        CredencialesInvalidasException exception = assertThrows(
-                CredencialesInvalidasException.class,
-                () -> loginUseCase.login(correo, clave, null)
+        InvalidCredentialsException exception = assertThrows(
+                InvalidCredentialsException.class,
+                () -> loginUseCase.login(email, password, null)
         );
-        assertEquals("Credenciales inválidas", exception.getMessage());
-        verify(usuarioPersistencePort).buscarPorCorreo(correo);
-        verify(passwordEncoderPort).matches(clave, usuario.getClave());
-        verify(jwtProviderPort, org.mockito.Mockito.never()).generarToken(anyInt(), anyString(), anyString(), any());
+        assertEquals("Invalid credentials", exception.getMessage());
+        verify(userPersistencePort).findByEmail(email);
+        verify(passwordEncoderPort).matches(password, user.getPassword());
+        verify(jwtProviderPort, org.mockito.Mockito.never()).generateToken(anyInt(), anyString(), anyString(), any());
     }
 
-    private Usuario crearUsuarioConRol(String correo, String claveEncriptada, String nombreRol) {
-        Usuario usuario = new Usuario();
-        usuario.setId(1);
-        usuario.setCorreo(correo);
-        usuario.setClave(claveEncriptada);
-        usuario.setRol(new Rol(null, nombreRol));
-        return usuario;
+    private User createUserWithRole(String email, String encodedPassword, String roleName) {
+        User user = new User();
+        user.setId(1);
+        user.setEmail(email);
+        user.setPassword(encodedPassword);
+        user.setRole(new Role(null, roleName));
+        return user;
     }
 }

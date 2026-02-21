@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class CampoObligatorioExceptionTest {
+class RequiredFieldExceptionTest {
 
     @Test
     void deberiaCrearExcepcionConMensajePorDefecto() {
         // Act
-        CampoObligatorioException exception = new CampoObligatorioException();
+        RequiredFieldException exception = new RequiredFieldException();
 
         // Assert
         assertNotNull(exception);
-        assertEquals("Falta un campo obligatorio", exception.getMessage());
+        assertEquals("Required field is missing", exception.getMessage());
     }
 
     @Test
@@ -23,7 +23,7 @@ class CampoObligatorioExceptionTest {
         String mensajePersonalizado = "El campo nombre es obligatorio";
 
         // Act
-        CampoObligatorioException exception = new CampoObligatorioException(mensajePersonalizado);
+        RequiredFieldException exception = new RequiredFieldException(mensajePersonalizado);
 
         // Assert
         assertNotNull(exception);

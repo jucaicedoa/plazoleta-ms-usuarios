@@ -1,10 +1,10 @@
 package com.plazoleta.usuarios.infraestructure.input.rest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plazoleta.usuarios.domain.api.AuthServicePort;
-import com.plazoleta.usuarios.domain.exception.CredencialesInvalidasException;
+import com.plazoleta.usuarios.application.handler.IAuthHandler;
+import com.plazoleta.usuarios.application.dto.LoginDto;
+import com.plazoleta.usuarios.domain.exception.InvalidCredentialsException;
 import com.plazoleta.usuarios.infraestructure.exceptionhandler.GlobalExceptionHandler;
-import com.plazoleta.usuarios.infraestructure.input.rest.dto.LoginRequestDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -25,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerTest {
 
     @Mock
-    private AuthServicePort authServicePort;
+    private IAuthHandler authHandler;
 
     @InjectMocks
     private AuthController authController;
@@ -42,69 +41,61 @@ class AuthControllerTest {
     }
 
     @Test
-    void deberiaRetornar200YTokenCuandoLoginEsExitoso() throws Exception {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto();
-        request.setCorreo("usuario@mail.com");
-        request.setClave("clave123");
-        String tokenEsperado = "eyJhbGciOiJIUzI1NiJ9...";
+    void shouldReturn200AndTokenWhenLoginSucceeds() throws Exception {
+        LoginDto request = new LoginDto();
+        request.setEmail("usuario@mail.com");
+        request.setPassword("clave123");
+        String expectedToken = "eyJhbGciOiJIUzI1NiJ9...";
 
-        when(authServicePort.login("usuario@mail.com", "clave123", null)).thenReturn(tokenEsperado);
+        when(authHandler.login(any(LoginDto.class))).thenReturn(expectedToken);
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value(tokenEsperado));
+                .andExpect(jsonPath("$.token").value(expectedToken));
     }
 
     @Test
-    void deberiaRetornar401CuandoCredencialesSonInvalidas() throws Exception {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto();
-        request.setCorreo("usuario@mail.com");
-        request.setClave("claveIncorrecta");
+    void shouldReturn401WhenCredentialsAreInvalid() throws Exception {
+        LoginDto request = new LoginDto();
+        request.setEmail("usuario@mail.com");
+        request.setPassword("claveIncorrecta");
 
-        when(authServicePort.login(anyString(), anyString(), any()))
-                .thenThrow(new CredencialesInvalidasException("Credenciales inválidas"));
+        when(authHandler.login(any(LoginDto.class)))
+                .thenThrow(new InvalidCredentialsException("Invalid credentials"));
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.codigo").value("CREDENCIALES_INVALIDAS"))
-                .andExpect(jsonPath("$.mensaje").value("Credenciales inválidas"));
+                .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"))
+                .andExpect(jsonPath("$.message").value("Invalid credentials"));
     }
 
     @Test
-    void deberiaRetornar400CuandoCorreoEsVacio() throws Exception {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto();
-        request.setCorreo("");
-        request.setClave("clave123");
+    void shouldReturn400WhenEmailIsEmpty() throws Exception {
+        LoginDto request = new LoginDto();
+        request.setEmail("");
+        request.setPassword("clave123");
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errores.correo").exists());
+                .andExpect(jsonPath("$.errors.email").exists());
     }
 
     @Test
-    void deberiaRetornar400CuandoClaveEsVacia() throws Exception {
-        // Arrange
-        LoginRequestDto request = new LoginRequestDto();
-        request.setCorreo("usuario@mail.com");
-        request.setClave("");
+    void shouldReturn400WhenPasswordIsEmpty() throws Exception {
+        LoginDto request = new LoginDto();
+        request.setEmail("usuario@mail.com");
+        request.setPassword("");
 
-        // Act & Assert
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errores.clave").exists());
+                .andExpect(jsonPath("$.errors.password").exists());
     }
 }

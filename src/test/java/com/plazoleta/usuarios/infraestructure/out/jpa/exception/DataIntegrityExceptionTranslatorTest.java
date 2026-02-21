@@ -1,9 +1,9 @@
 package com.plazoleta.usuarios.infraestructure.out.jpa.exception;
 
-import com.plazoleta.usuarios.domain.exception.CampoObligatorioException;
-import com.plazoleta.usuarios.domain.exception.CorreoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.DocumentoYaRegistradoException;
-import com.plazoleta.usuarios.domain.exception.ValorExcedeLongitudException;
+import com.plazoleta.usuarios.domain.exception.RequiredFieldException;
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.DocumentAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.exception.ValueExceedsLengthException;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 
@@ -13,248 +13,248 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class DataIntegrityExceptionTranslatorTest {
 
     @Test
-    void deberiaLanzarCorreoYaRegistradoExceptionCuandoHayUniqueConstraintEnEmail() {
+    void deberiaLanzarEmailAlreadyRegisteredExceptionCuandoHayUniqueConstraintEnEmail() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: duplicate key value violates unique constraint [email]");
 
         // Act & Assert
-        CorreoYaRegistradoException exception = assertThrows(
-                CorreoYaRegistradoException.class,
+        EmailAlreadyRegisteredException exception = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Ya existe un usuario con este correo electrónico", exception.getMessage());
+        assertEquals("A user with this email already exists", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarCorreoYaRegistradoExceptionCuandoHayDuplicateKeyEnEmail() {
+    void deberiaLanzarEmailAlreadyRegisteredExceptionCuandoHayDuplicateKeyEnEmail() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "duplicate key value violates unique constraint [email]");
 
         // Act & Assert
-        CorreoYaRegistradoException exception = assertThrows(
-                CorreoYaRegistradoException.class,
+        EmailAlreadyRegisteredException exception = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Ya existe un usuario con este correo electrónico", exception.getMessage());
+        assertEquals("A user with this email already exists", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarCorreoYaRegistradoExceptionConMensajeCustomCuandoUniqueConstraintNoEsEmailNiDocument() {
+    void deberiaLanzarEmailAlreadyRegisteredExceptionConMensajeCustomCuandoUniqueConstraintNoEsEmailNiDocument() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "duplicate key value violates unique constraint [otro_campo]");
 
         // Act & Assert
-        CorreoYaRegistradoException exception = assertThrows(
-                CorreoYaRegistradoException.class,
+        EmailAlreadyRegisteredException exception = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Ya existe un registro con estos datos", exception.getMessage());
+        assertEquals("A record with this data already exists", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarDocumentoYaRegistradoExceptionCuandoHayUniqueConstraintEnDocument() {
+    void deberiaLanzarDocumentAlreadyRegisteredExceptionCuandoHayUniqueConstraintEnDocument() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: duplicate key value violates unique constraint [document]");
 
         // Act & Assert
-        DocumentoYaRegistradoException exception = assertThrows(
-                DocumentoYaRegistradoException.class,
+        DocumentAlreadyRegisteredException exception = assertThrows(
+                DocumentAlreadyRegisteredException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Ya existe un usuario con este número de documento", exception.getMessage());
+        assertEquals("A user with this document number already exists", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaCelular() {
+    void deberiaLanzarValueExceedsLengthExceptionParaCelular() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: el valor es demasiado largo para el tipo character varying(13) [phone]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El número de celular no puede tener más de 13 caracteres", exception.getMessage());
-        assertEquals("celular", exception.getCampo());
+        assertEquals("Phone number cannot exceed 13 characters", exception.getMessage());
+        assertEquals("phone", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaCelularConVarying13() {
+    void deberiaLanzarValueExceedsLengthExceptionParaCelularConVarying13() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying(13)");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("celular", exception.getCampo());
+        assertEquals("phone", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaDocumento() {
+    void deberiaLanzarValueExceedsLengthExceptionParaDocumento() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [document_number]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El número de documento excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("documento", exception.getCampo());
+        assertEquals("Document number exceeds maximum allowed length", exception.getMessage());
+        assertEquals("documentNumber", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaEmail() {
+    void deberiaLanzarValueExceedsLengthExceptionParaEmail() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [email]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El correo electrónico excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("correo", exception.getCampo());
+        assertEquals("Email exceeds maximum allowed length", exception.getMessage());
+        assertEquals("email", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaNombre() {
+    void deberiaLanzarValueExceedsLengthExceptionParaNombre() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [first_name]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El nombre excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("nombre", exception.getCampo());
+        assertEquals("First name exceeds maximum allowed length", exception.getMessage());
+        assertEquals("firstName", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaApellido() {
+    void deberiaLanzarValueExceedsLengthExceptionParaApellido() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [last_name]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El apellido excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("apellido", exception.getCampo());
+        assertEquals("Last name exceeds maximum allowed length", exception.getMessage());
+        assertEquals("lastName", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionParaPassword() {
+    void deberiaLanzarValueExceedsLengthExceptionParaPassword() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [password]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("La contraseña excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("clave", exception.getCampo());
+        assertEquals("Password exceeds maximum allowed length", exception.getMessage());
+        assertEquals("password", exception.getField());
     }
 
     @Test
-    void deberiaLanzarValorExcedeLongitudExceptionGenericoCuandoNoSeIdentificaElCampo() {
+    void deberiaLanzarValueExceedsLengthExceptionGenericoCuandoNoSeIdentificaElCampo() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: value too long for type character varying [campo_desconocido]");
 
         // Act & Assert
-        ValorExcedeLongitudException exception = assertThrows(
-                ValorExcedeLongitudException.class,
+        ValueExceedsLengthException exception = assertThrows(
+                ValueExceedsLengthException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("El valor excede la longitud máxima permitida", exception.getMessage());
-        assertEquals("desconocido", exception.getCampo());
+        assertEquals("Value exceeds maximum allowed length", exception.getMessage());
+        assertEquals("unknown", exception.getField());
     }
 
     @Test
-    void deberiaLanzarCampoObligatorioExceptionCuandoHayNotNullViolation() {
+    void deberiaLanzarRequiredFieldExceptionCuandoHayNotNullViolation() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: not-null constraint violation");
 
         // Act & Assert
-        CampoObligatorioException exception = assertThrows(
-                CampoObligatorioException.class,
+        RequiredFieldException exception = assertThrows(
+                RequiredFieldException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Falta un campo obligatorio", exception.getMessage());
+        assertEquals("Required field is missing", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarCampoObligatorioExceptionCuandoHayNullValue() {
+    void deberiaLanzarRequiredFieldExceptionCuandoHayNullValue() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: null value in column");
 
         // Act & Assert
-        CampoObligatorioException exception = assertThrows(
-                CampoObligatorioException.class,
+        RequiredFieldException exception = assertThrows(
+                RequiredFieldException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Falta un campo obligatorio", exception.getMessage());
+        assertEquals("Required field is missing", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarCampoObligatorioExceptionCuandoMensajeEsNull() {
+    void deberiaLanzarRequiredFieldExceptionCuandoMensajeEsNull() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(null);
 
         // Act & Assert
-        CampoObligatorioException exception = assertThrows(
-                CampoObligatorioException.class,
+        RequiredFieldException exception = assertThrows(
+                RequiredFieldException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Error al guardar los datos en la base de datos", exception.getMessage());
+        assertEquals("Error saving data to database", exception.getMessage());
     }
 
     @Test
-    void deberiaLanzarCampoObligatorioExceptionCuandoErrorNoEsReconocido() {
+    void deberiaLanzarRequiredFieldExceptionCuandoErrorNoEsReconocido() {
         // Arrange
         DataIntegrityViolationException ex = new DataIntegrityViolationException(
                 "ERROR: algún error desconocido de base de datos");
 
         // Act & Assert
-        CampoObligatorioException exception = assertThrows(
-                CampoObligatorioException.class,
+        RequiredFieldException exception = assertThrows(
+                RequiredFieldException.class,
                 () -> DataIntegrityExceptionTranslator.throwSpecific(ex)
         );
 
-        assertEquals("Error al guardar los datos en la base de datos", exception.getMessage());
+        assertEquals("Error saving data to database", exception.getMessage());
     }
 }

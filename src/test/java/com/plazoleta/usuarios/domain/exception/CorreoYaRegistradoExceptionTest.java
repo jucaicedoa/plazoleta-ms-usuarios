@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class CorreoYaRegistradoExceptionTest {
+class EmailAlreadyRegisteredExceptionTest {
 
     @Test
     void deberiaCrearExcepcionConMensajePorDefecto() {
         // Act
-        CorreoYaRegistradoException exception = new CorreoYaRegistradoException();
+        EmailAlreadyRegisteredException exception = new EmailAlreadyRegisteredException();
 
         // Assert
         assertNotNull(exception);
-        assertEquals("Ya existe un usuario con este correo electrónico", exception.getMessage());
+        assertEquals("A user with this email already exists", exception.getMessage());
     }
 
     @Test
@@ -23,7 +23,7 @@ class CorreoYaRegistradoExceptionTest {
         String mensajePersonalizado = "El correo ya está registrado en el sistema";
 
         // Act
-        CorreoYaRegistradoException exception = new CorreoYaRegistradoException(mensajePersonalizado);
+        EmailAlreadyRegisteredException exception = new EmailAlreadyRegisteredException(mensajePersonalizado);
 
         // Assert
         assertNotNull(exception);

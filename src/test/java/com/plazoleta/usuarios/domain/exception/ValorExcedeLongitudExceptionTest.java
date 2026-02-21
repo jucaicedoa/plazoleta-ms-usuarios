@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class ValorExcedeLongitudExceptionTest {
+class ValueExceedsLengthExceptionTest {
 
     @Test
     void deberiaCrearExcepcionConMensajeYCampo() {
@@ -14,12 +14,12 @@ class ValorExcedeLongitudExceptionTest {
         String campo = "nombre";
 
         // Act
-        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(mensaje, campo);
+        ValueExceedsLengthException exception = new ValueExceedsLengthException(mensaje, campo);
 
         // Assert
         assertNotNull(exception);
         assertEquals(mensaje, exception.getMessage());
-        assertEquals(campo, exception.getCampo());
+        assertEquals(campo, exception.getField());
     }
 
     @Test
@@ -28,12 +28,12 @@ class ValorExcedeLongitudExceptionTest {
         String mensaje = "El valor excede la longitud máxima";
 
         // Act
-        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(mensaje, null);
+        ValueExceedsLengthException exception = new ValueExceedsLengthException(mensaje, null);
 
         // Assert
         assertNotNull(exception);
         assertEquals(mensaje, exception.getMessage());
-        assertEquals("desconocido", exception.getCampo());
+        assertEquals("unknown", exception.getField());
     }
 
     @Test
@@ -43,11 +43,11 @@ class ValorExcedeLongitudExceptionTest {
         String campoVacio = "";
 
         // Act
-        ValorExcedeLongitudException exception = new ValorExcedeLongitudException(mensaje, campoVacio);
+        ValueExceedsLengthException exception = new ValueExceedsLengthException(mensaje, campoVacio);
 
         // Assert
         assertNotNull(exception);
         assertEquals(mensaje, exception.getMessage());
-        assertEquals("", exception.getCampo()); // Se acepta vacío, solo null se convierte a "desconocido"
+        assertEquals("", exception.getField()); // Se acepta vacío, solo null se convierte a "desconocido"
     }
 }

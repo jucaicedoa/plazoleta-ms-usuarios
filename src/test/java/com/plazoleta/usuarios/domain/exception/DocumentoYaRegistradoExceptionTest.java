@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class DocumentoYaRegistradoExceptionTest {
+class DocumentAlreadyRegisteredExceptionTest {
 
     @Test
     void deberiaCrearExcepcionConMensajePorDefecto() {
         // Act
-        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException();
+        DocumentAlreadyRegisteredException exception = new DocumentAlreadyRegisteredException();
 
         // Assert
         assertNotNull(exception);
-        assertEquals("Ya existe un usuario con este número de documento", exception.getMessage());
+        assertEquals("A user with this document number already exists", exception.getMessage());
     }
 
     @Test
@@ -23,7 +23,7 @@ class DocumentoYaRegistradoExceptionTest {
         String mensajePersonalizado = "El documento ya está registrado";
 
         // Act
-        DocumentoYaRegistradoException exception = new DocumentoYaRegistradoException(mensajePersonalizado);
+        DocumentAlreadyRegisteredException exception = new DocumentAlreadyRegisteredException(mensajePersonalizado);
 
         // Assert
         assertNotNull(exception);
