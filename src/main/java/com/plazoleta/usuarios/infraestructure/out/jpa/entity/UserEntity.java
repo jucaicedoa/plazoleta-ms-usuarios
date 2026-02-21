@@ -17,32 +17,32 @@ import java.time.LocalDateTime;
 @Table(name = "usuario", schema = "usuarios")
 @Getter
 @Setter
-public class UsuarioEntity {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "first_name")
-    private String nombre;
+    private String firstName;
 
     @Column(name = "last_name")
-    private String apellido;
+    private String lastName;
 
     @Column(name = "document_number")
-    private String documento;
+    private String documentNumber;
 
     @Column(name = "phone")
-    private String celular;
+    private String phone;
 
     @Column(name = "birth_date")
-    private LocalDate fechaNacimiento;
+    private LocalDate birthDate;
 
     @Column(name = "email")
-    private String correo;
+    private String email;
 
     @Column(name = "password")
-    private String clave;
+    private String password;
 
     @ManyToOne
     @JoinColumn(name = "role_id")

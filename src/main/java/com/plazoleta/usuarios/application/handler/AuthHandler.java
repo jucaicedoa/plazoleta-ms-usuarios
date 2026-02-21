@@ -13,6 +13,6 @@ public class AuthHandler implements IAuthHandler {
 
     @Override
     public String login(LoginDto dto) {
-        return authServicePort.login(dto.getCorreo(), dto.getClave(), dto.getRestauranteId());
+        return authServicePort.login(dto.getEmail(), dto.getPassword(), dto.getRestaurantId());
     }
 }

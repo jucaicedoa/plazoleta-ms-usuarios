@@ -13,13 +13,13 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UsuarioResponseDto {
+public class UserResponseDto {
     private Integer id;
-    private String nombre;
-    private String apellido;
-    private String documento;
-    private String celular;
-    private LocalDate fechaNacimiento;
-    private String correo;
-    private String rol;
+    private String firstName;
+    private String lastName;
+    private String documentNumber;
+    private String phone;
+    private LocalDate birthDate;
+    private String email;
+    private String role;
 }

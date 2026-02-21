@@ -11,8 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TokenClaims {
     private Integer id;
-    private String correo;
-    private String rol;
-    /** ID del restaurante del propietario; solo presente cuando el usuario es PROPIETARIO. */
-    private Integer restauranteId;
+    private String email;
+    private String role;
+    private Integer restaurantId;
 }

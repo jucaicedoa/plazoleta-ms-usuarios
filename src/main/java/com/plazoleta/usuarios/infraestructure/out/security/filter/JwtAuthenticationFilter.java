@@ -35,15 +35,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith(BEARER_PREFIX)) {
             String token = authHeader.substring(BEARER_PREFIX.length()).trim();
-            Optional<TokenClaims> claimsOpt = jwtProviderPort.validarToken(token);
+            Optional<TokenClaims> claimsOpt = jwtProviderPort.validateToken(token);
 
             if (claimsOpt.isPresent()) {
                 TokenClaims claims = claimsOpt.get();
                 request.setAttribute("tokenClaims", claims);
-                String role = claims.getRol() != null ? claims.getRol() : "";
+                String role = claims.getRole() != null ? claims.getRole() : "";
                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(ROLE_PREFIX + role);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        claims.getCorreo(),
+                        claims.getEmail(),
                         null,
                         Collections.singletonList(authority)
                 );

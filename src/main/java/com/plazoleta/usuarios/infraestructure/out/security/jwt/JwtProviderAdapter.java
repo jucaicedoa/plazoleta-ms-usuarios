@@ -30,30 +30,30 @@ public class JwtProviderAdapter implements JwtProviderPort {
     }
 
     @Override
-    public String generarToken(Integer id, String correo, String rol) {
-        return generarToken(id, correo, rol, null);
+    public String generateToken(Integer id, String email, String role) {
+        return generateToken(id, email, role, null);
     }
 
     @Override
-    public String generarToken(Integer id, String correo, String rol, Integer restauranteId) {
+    public String generateToken(Integer id, String email, String role, Integer restaurantId) {
         long now = System.currentTimeMillis();
         Date issuedAt = new Date(now);
         Date expiration = new Date(now + expirationSeconds * 1000);
 
         var builder = Jwts.builder()
                 .subject(String.valueOf(id))
-                .claim(CLAIM_EMAIL, correo)
-                .claim(CLAIM_ROLE, rol)
+                .claim(CLAIM_EMAIL, email)
+                .claim(CLAIM_ROLE, role)
                 .issuedAt(issuedAt)
                 .expiration(expiration);
-        if (restauranteId != null) {
-            builder.claim(CLAIM_RESTAURANT_ID, restauranteId);
+        if (restaurantId != null) {
+            builder.claim(CLAIM_RESTAURANT_ID, restaurantId);
         }
         return builder.signWith(secretKey).compact();
     }
 
     @Override
-    public Optional<TokenClaims> validarToken(String token) {
+    public Optional<TokenClaims> validateToken(String token) {
         try {
             Claims claims = Jwts.parser()
                     .verifyWith(secretKey)
@@ -61,10 +61,10 @@ public class JwtProviderAdapter implements JwtProviderPort {
                     .parseSignedClaims(token)
                     .getPayload();
             Integer id = Integer.valueOf(claims.getSubject());
-            String correo = claims.get(CLAIM_EMAIL, String.class);
-            String rol = claims.get(CLAIM_ROLE, String.class);
-            Integer restauranteId = claims.get(CLAIM_RESTAURANT_ID, Integer.class);
-            return Optional.of(new TokenClaims(id, correo, rol, restauranteId));
+            String email = claims.get(CLAIM_EMAIL, String.class);
+            String role = claims.get(CLAIM_ROLE, String.class);
+            Integer restaurantId = claims.get(CLAIM_RESTAURANT_ID, Integer.class);
+            return Optional.of(new TokenClaims(id, email, role, restaurantId));
         } catch (Exception e) {
             return Optional.empty();
         }
