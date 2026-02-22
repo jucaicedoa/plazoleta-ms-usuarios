@@ -137,13 +137,13 @@ class UserJpaAdapterTest {
 
         User user = createUser();
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userEntity));
+        when(userRepository.findById(1)).thenReturn(Optional.of(userEntity));
         when(mapper.toDomain(userEntity)).thenReturn(user);
 
         User result = adapter.findById(id);
 
         assertNotNull(result);
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findById(1);
         verify(mapper, times(1)).toDomain(userEntity);
     }
 
@@ -151,12 +151,12 @@ class UserJpaAdapterTest {
     void shouldReturnNullWhenUserDoesNotExist() {
         Integer id = 999;
 
-        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+        when(userRepository.findById(999)).thenReturn(Optional.empty());
 
         User result = adapter.findById(id);
 
         assertEquals(null, result);
-        verify(userRepository, times(1)).findById(999L);
+        verify(userRepository, times(1)).findById(999);
         verify(mapper, never()).toDomain(any());
     }
 

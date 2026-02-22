@@ -16,6 +16,7 @@ public interface UserEntityMapper {
 
     @Mapping(target = "role", source = "role")
     @Mapping(target = "restaurantId", source = "restaurantId")
+    @Mapping(target = "createdAt", ignore = true)
     UserEntity toEntity(User user);
 
     default Role roleFromEntity(RoleEntity entity) {

@@ -44,7 +44,7 @@ public class UserJpaAdapter implements UserPersistencePort {
 
     @Override
     public User findById(Integer id) {
-        UserEntity entity = userRepository.findById(id.longValue()).orElse(null);
+        UserEntity entity = userRepository.findById(id).orElse(null);
         return entity != null ? mapper.toDomain(entity) : null;
     }
 
