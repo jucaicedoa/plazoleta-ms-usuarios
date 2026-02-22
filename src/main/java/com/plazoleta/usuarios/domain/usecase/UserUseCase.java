@@ -1,6 +1,7 @@
 package com.plazoleta.usuarios.domain.usecase;
 
 import com.plazoleta.usuarios.domain.api.UserServicePort;
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
 import com.plazoleta.usuarios.domain.exception.InvalidFieldException;
 import com.plazoleta.usuarios.domain.exception.InvalidEmailException;
 import com.plazoleta.usuarios.domain.exception.UserUnderAgeException;
@@ -60,6 +61,6 @@ public class UserUseCase implements UserServicePort {
             throw new UserUnderAgeException();
 
         if (persistencePort.existsByEmail(data.getEmail()))
-            throw new InvalidFieldException("Email already registered");
+            throw new EmailAlreadyRegisteredException("Email already registered");
     }
 }

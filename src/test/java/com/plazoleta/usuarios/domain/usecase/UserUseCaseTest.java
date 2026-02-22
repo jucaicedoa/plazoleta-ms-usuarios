@@ -1,5 +1,6 @@
 package com.plazoleta.usuarios.domain.usecase;
 
+import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
 import com.plazoleta.usuarios.domain.exception.InvalidFieldException;
 import com.plazoleta.usuarios.domain.exception.InvalidEmailException;
 import com.plazoleta.usuarios.domain.exception.UserUnderAgeException;
@@ -127,8 +128,8 @@ class UserUseCaseTest {
 
         when(persistencePort.existsByEmail(anyString())).thenReturn(true);
 
-        InvalidFieldException exception = assertThrows(
-                InvalidFieldException.class,
+        EmailAlreadyRegisteredException exception = assertThrows(
+                EmailAlreadyRegisteredException.class,
                 () -> useCase.createOwner(data)
         );
 
