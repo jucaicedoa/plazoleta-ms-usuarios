@@ -193,7 +193,6 @@ class CreateOwnerHandlerTest {
         dto.setBirthDate(LocalDate.now().minusYears(22));
         dto.setEmail("pedro@restaurante.com");
         dto.setPassword("empleado123");
-        dto.setRestaurantId(1);
         return dto;
     }
 
