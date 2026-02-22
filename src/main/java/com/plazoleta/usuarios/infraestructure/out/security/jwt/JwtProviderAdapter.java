@@ -63,10 +63,18 @@ public class JwtProviderAdapter implements JwtProviderPort {
             Integer id = Integer.valueOf(claims.getSubject());
             String email = claims.get(CLAIM_EMAIL, String.class);
             String role = claims.get(CLAIM_ROLE, String.class);
-            Integer restaurantId = claims.get(CLAIM_RESTAURANT_ID, Integer.class);
+            Integer restaurantId = getIntegerClaim(claims, CLAIM_RESTAURANT_ID);
             return Optional.of(new TokenClaims(id, email, role, restaurantId));
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    private Integer getIntegerClaim(Claims claims, String name) {
+        Object value = claims.get(name);
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).intValue();
+        if (value instanceof String) return Integer.valueOf((String) value);
+        return null;
     }
 }
