@@ -1,9 +1,7 @@
 package com.plazoleta.usuarios.infraestructure.out.jpa.adapter;
 
 import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
-import com.plazoleta.usuarios.domain.exception.DocumentAlreadyRegisteredException;
 import com.plazoleta.usuarios.domain.exception.RoleNotFoundException;
-import com.plazoleta.usuarios.domain.exception.ValueExceedsLengthException;
 import com.plazoleta.usuarios.domain.model.Role;
 import com.plazoleta.usuarios.domain.model.User;
 import com.plazoleta.usuarios.infraestructure.out.jpa.entity.RoleEntity;

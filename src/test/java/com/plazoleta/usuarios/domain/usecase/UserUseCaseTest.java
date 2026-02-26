@@ -1,6 +1,7 @@
 package com.plazoleta.usuarios.domain.usecase;
 
 import com.plazoleta.usuarios.domain.exception.EmailAlreadyRegisteredException;
+import com.plazoleta.usuarios.domain.api.UserCreationValidationPort;
 import com.plazoleta.usuarios.domain.exception.InvalidFieldException;
 import com.plazoleta.usuarios.domain.exception.InvalidEmailException;
 import com.plazoleta.usuarios.domain.exception.UserUnderAgeException;
@@ -23,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
@@ -37,24 +39,26 @@ class UserUseCaseTest {
     @Mock
     private PasswordEncoderPort passwordEncoderPort;
 
+    @Mock
+    private UserCreationValidationPort userCreationValidationPort;
+
     private UserUseCase useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new UserUseCase(persistencePort, passwordEncoderPort);
+        useCase = new UserUseCase(persistencePort, passwordEncoderPort, userCreationValidationPort);
     }
 
     @Test
     void shouldCreateOwnerWithValidData() {
         UserCreationData data = createValidData();
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
         when(persistencePort.saveUser(any(User.class))).thenReturn(new User());
 
         useCase.createOwner(data);
 
-        verify(persistencePort, times(1)).existsByEmail(data.getEmail());
+        verify(userCreationValidationPort, times(1)).validate(data);
         verify(passwordEncoderPort, times(1)).encode("password123");
         verify(persistencePort, times(1)).saveUser(any(User.class));
     }
@@ -72,6 +76,9 @@ class UserUseCaseTest {
                 .password("password123")
                 .restaurantId(null)
                 .build();
+
+        doThrow(new InvalidFieldException("Invalid document"))
+                .when(userCreationValidationPort).validate(any(UserCreationData.class));
 
         InvalidFieldException exception = assertThrows(
                 InvalidFieldException.class,
@@ -96,6 +103,9 @@ class UserUseCaseTest {
                 .restaurantId(null)
                 .build();
 
+        doThrow(new InvalidEmailException())
+                .when(userCreationValidationPort).validate(any(UserCreationData.class));
+
         assertThrows(InvalidEmailException.class, () -> useCase.createOwner(data));
         verify(persistencePort, never()).saveUser(any());
     }
@@ -113,6 +123,9 @@ class UserUseCaseTest {
                 .restaurantId(null)
                 .build();
 
+        doThrow(new UserUnderAgeException())
+                .when(userCreationValidationPort).validate(any(UserCreationData.class));
+
         UserUnderAgeException exception = assertThrows(
                 UserUnderAgeException.class,
                 () -> useCase.createOwner(data)
@@ -126,7 +139,8 @@ class UserUseCaseTest {
     void shouldThrowWhenEmailAlreadyExists() {
         UserCreationData data = createValidData();
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(true);
+        doThrow(new EmailAlreadyRegisteredException("Email already registered"))
+                .when(userCreationValidationPort).validate(any(UserCreationData.class));
 
         EmailAlreadyRegisteredException exception = assertThrows(
                 EmailAlreadyRegisteredException.class,
@@ -134,7 +148,7 @@ class UserUseCaseTest {
         );
 
         assertEquals("Email already registered", exception.getMessage());
-        verify(persistencePort, times(1)).existsByEmail(data.getEmail());
+        verify(userCreationValidationPort, times(1)).validate(data);
         verify(persistencePort, never()).saveUser(any());
     }
 
@@ -145,7 +159,6 @@ class UserUseCaseTest {
         String encodedPassword = "encodedPassword";
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoderPort.encode(originalPassword)).thenReturn(encodedPassword);
         when(persistencePort.saveUser(any(User.class))).thenReturn(new User());
 
@@ -161,7 +174,6 @@ class UserUseCaseTest {
         UserCreationData data = createValidData();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
         when(persistencePort.saveUser(any(User.class))).thenReturn(new User());
 
@@ -177,13 +189,12 @@ class UserUseCaseTest {
     void shouldCreateEmployeeWithValidData() {
         UserCreationData data = createValidData();
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
         when(persistencePort.saveUser(any(User.class))).thenReturn(new User());
 
         useCase.createEmployee(data);
 
-        verify(persistencePort, times(1)).existsByEmail(data.getEmail());
+        verify(userCreationValidationPort, times(1)).validate(data);
         verify(persistencePort, times(1)).saveUser(any(User.class));
     }
 
@@ -192,7 +203,6 @@ class UserUseCaseTest {
         UserCreationData data = createValidData();
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
 
-        when(persistencePort.existsByEmail(anyString())).thenReturn(false);
         when(passwordEncoderPort.encode(anyString())).thenReturn("encodedPassword");
         when(persistencePort.saveUser(any(User.class))).thenReturn(new User());
 

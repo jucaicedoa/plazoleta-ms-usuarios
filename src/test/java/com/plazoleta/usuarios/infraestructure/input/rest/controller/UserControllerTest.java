@@ -293,6 +293,35 @@ class UserControllerTest {
         verify(userHandler, never()).createEmployee(any(), any());
     }
 
+    @Test
+    void shouldReturn403WhenCreateEmployeeWithoutTokenClaims() throws Exception {
+        CreateEmployeeDto dto = createValidEmployeeDto();
+
+        mockMvc.perform(post("/api/v1/usuarios/empleado")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+
+        verify(userHandler, never()).createEmployee(any(), any());
+    }
+
+    @Test
+    void shouldReturn403WhenCreateEmployeeWithNullRestaurantId() throws Exception {
+        TokenClaims tokenClaims = new TokenClaims(1, "owner@mail.com", "PROPIETARIO", null);
+        CreateEmployeeDto dto = createValidEmployeeDto();
+
+        mockMvc.perform(post("/api/v1/usuarios/empleado")
+                        .with(request -> {
+                            request.setAttribute("tokenClaims", tokenClaims);
+                            return request;
+                        })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isForbidden());
+
+        verify(userHandler, never()).createEmployee(any(), any());
+    }
+
     private CreateOwnerDto createValidOwnerDto() {
         CreateOwnerDto dto = new CreateOwnerDto();
         dto.setFirstName("Juan");

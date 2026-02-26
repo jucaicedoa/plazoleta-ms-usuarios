@@ -76,6 +76,24 @@ class LoginUseCaseTest {
     }
 
     @Test
+    void shouldReturnTokenWithRestaurantIdWhenProvided() {
+        String email = "propietario@mail.com";
+        String password = "clave123";
+        Integer restaurantId = 3;
+        User user = createUserWithRole(email, "encodedPassword", "PROPIETARIO");
+        String expectedToken = "token.con.restaurant";
+
+        when(userPersistencePort.findByEmail(email)).thenReturn(Optional.of(user));
+        when(passwordEncoderPort.matches(password, user.getPassword())).thenReturn(true);
+        when(jwtProviderPort.generateToken(user.getId(), user.getEmail(), "PROPIETARIO", restaurantId)).thenReturn(expectedToken);
+
+        String token = loginUseCase.login(email, password, restaurantId);
+
+        assertEquals(expectedToken, token);
+        verify(jwtProviderPort).generateToken(user.getId(), user.getEmail(), "PROPIETARIO", restaurantId);
+    }
+
+    @Test
     void shouldThrowInvalidCredentialsWhenPasswordIsWrong() {
         String email = "usuario@mail.com";
         String password = "wrongPassword";

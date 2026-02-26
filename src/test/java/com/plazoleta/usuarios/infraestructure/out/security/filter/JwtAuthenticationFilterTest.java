@@ -98,6 +98,7 @@ class JwtAuthenticationFilterTest {
 
         // Assert
         verify(jwtProviderPort).validateToken(token);
+        verify(request).setAttribute("tokenClaims", claims);
         verify(filterChain).doFilter(request, response);
 
         var authentication = SecurityContextHolder.getContext().getAuthentication();

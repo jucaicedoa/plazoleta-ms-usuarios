@@ -92,4 +92,32 @@ class JwtProviderAdapterTest {
         // Assert
         assertFalse(claimsOpt.isPresent());
     }
+
+    @Test
+    void deberiaGenerarTokenConRestaurantIdYValidarCorrectamente() {
+        Integer id = 1;
+        String correo = "propietario@restaurante.com";
+        String rol = "PROPIETARIO";
+        Integer restaurantId = 5;
+
+        String token = jwtProviderAdapter.generateToken(id, correo, rol, restaurantId);
+
+        assertNotNull(token);
+        Optional<TokenClaims> claimsOpt = jwtProviderAdapter.validateToken(token);
+        assertTrue(claimsOpt.isPresent());
+        TokenClaims claims = claimsOpt.get();
+        assertEquals(id, claims.getId());
+        assertEquals(correo, claims.getEmail());
+        assertEquals(rol, claims.getRole());
+        assertEquals(restaurantId, claims.getRestaurantId());
+    }
+
+    @Test
+    void deberiaGenerarTokenSinRestaurantIdCuandoEsNull() {
+        String token = jwtProviderAdapter.generateToken(1, "a@b.com", "EMPLEADO", null);
+
+        Optional<TokenClaims> claimsOpt = jwtProviderAdapter.validateToken(token);
+        assertTrue(claimsOpt.isPresent());
+        assertTrue(claimsOpt.get().getRestaurantId() == null);
+    }
 }
