@@ -1,6 +1,7 @@
 package com.plazoleta.usuarios.infraestructure.configuration;
 
 import com.plazoleta.usuarios.domain.api.AuthServicePort;
+import com.plazoleta.usuarios.domain.api.UserCreationValidationPort;
 import com.plazoleta.usuarios.domain.api.UserServicePort;
 import com.plazoleta.usuarios.domain.spi.JwtProviderPort;
 import com.plazoleta.usuarios.domain.spi.PasswordEncoderPort;
@@ -8,6 +9,7 @@ import com.plazoleta.usuarios.domain.spi.UserPersistencePort;
 import com.plazoleta.usuarios.domain.usecase.LoginUseCase;
 import com.plazoleta.usuarios.domain.usecase.UserUseCase;
 import com.plazoleta.usuarios.infraestructure.out.jpa.adapter.UserJpaAdapter;
+import com.plazoleta.usuarios.infraestructure.out.validation.UserCreationValidationAdapter;
 import com.plazoleta.usuarios.infraestructure.out.jpa.mapper.UserEntityMapper;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.RoleRepository;
 import com.plazoleta.usuarios.infraestructure.out.jpa.repository.UserRepository;
@@ -46,8 +48,13 @@ public class BeanConfiguration {
     }
 
     @Bean
+    public UserCreationValidationPort userCreationValidationPort() {
+        return new UserCreationValidationAdapter(userPersistencePort());
+    }
+
+    @Bean
     public UserServicePort userServicePort() {
-        return new UserUseCase(userPersistencePort(), passwordEncoderPort());
+        return new UserUseCase(userPersistencePort(), passwordEncoderPort(), userCreationValidationPort());
     }
 
     @Bean
